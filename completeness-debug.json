@@ -1,0 +1,22 @@
+{
+  "score": 100,
+  "earnedPoints": 23,
+  "totalPoints": 23,
+  "photoCount": 6,
+  "totalCategoriesCount": 8,
+  "basic": {
+    "name": true,
+    "bio": true,
+    "birthDate": true,
+    "gender": true,
+    "lookingFor": true,
+    "languages": true
+  },
+  "career": {
+    "work": true,
+    "education": true
+  },
+  "location": {
+    "cityAndState": true
+  }
+}

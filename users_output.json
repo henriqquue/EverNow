@@ -1,0 +1,182 @@
+﻿[
+  {
+    "id": "cmo3a3rob0025517te5f2k0jx",
+    "name": "Julia Costa",
+    "email": "julia.costa@email.com",
+    "status": "ACTIVE",
+    "role": "USER",
+    "onboardingComplete": false,
+    "incognitoMode": false,
+    "_count": {
+      "userPhotos": 1
+    }
+  },
+  {
+    "id": "cmo3a3rga001v517t8arqr3j6",
+    "name": "John Doe",
+    "email": "john@doe.com",
+    "status": "ACTIVE",
+    "role": "USER",
+    "onboardingComplete": true,
+    "incognitoMode": false,
+    "_count": {
+      "userPhotos": 1
+    }
+  },
+  {
+    "id": "cmo3a3rns001x517t6dibgg9l",
+    "name": "Ana Silva",
+    "email": "ana.silva@email.com",
+    "status": "ACTIVE",
+    "role": "USER",
+    "onboardingComplete": true,
+    "incognitoMode": false,
+    "_count": {
+      "userPhotos": 1
+    }
+  },
+  {
+    "id": "cmo3a3rw5002l517tbghq7iu5",
+    "name": "Lucas Mendes",
+    "email": "lucas.mendes@email.com",
+    "status": "ACTIVE",
+    "role": "USER",
+    "onboardingComplete": true,
+    "incognitoMode": false,
+    "_count": {
+      "userPhotos": 1
+    }
+  },
+  {
+    "id": "cmo3a3rwd002t517tdopob51x",
+    "name": "Rafael Souza",
+    "email": "rafael.souza@email.com",
+    "status": "ACTIVE",
+    "role": "USER",
+    "onboardingComplete": false,
+    "incognitoMode": false,
+    "_count": {
+      "userPhotos": 1
+    }
+  },
+  {
+    "id": "cmo3a3roo002d517tme5jt67r",
+    "name": "Mariana Oliveira",
+    "email": "mariana.oliveira@email.com",
+    "status": "ACTIVE",
+    "role": "USER",
+    "onboardingComplete": true,
+    "incognitoMode": false,
+    "_count": {
+      "userPhotos": 1
+    }
+  },
+  {
+    "id": "cmo37k2pr0005zm441ero49ng",
+    "name": "Henrique",
+    "email": "henrique.rezende667@gmail.com",
+    "status": "ACTIVE",
+    "role": "USER",
+    "onboardingComplete": true,
+    "incognitoMode": false,
+    "_count": {
+      "userPhotos": 1
+    }
+  },
+  {
+    "id": "cmo3a3ro40021517t4zoo2tf6",
+    "name": "Pedro Santos",
+    "email": "pedro.santos@email.com",
+    "status": "ACTIVE",
+    "role": "USER",
+    "onboardingComplete": false,
+    "incognitoMode": false,
+    "_count": {
+      "userPhotos": 1
+    }
+  },
+  {
+    "id": "cmo3ol3u8001j9pg0x701zjsg",
+    "name": "Henrique2",
+    "email": "henrique.rezende668@rede.ulbra.br",
+    "status": "ACTIVE",
+    "role": "USER",
+    "onboardingComplete": false,
+    "incognitoMode": false,
+    "_count": {
+      "userPhotos": 1
+    }
+  },
+  {
+    "id": "cmo3a3roi0029517td6imfeas",
+    "name": "Carlos Lima",
+    "email": "carlos.lima@email.com",
+    "status": "ACTIVE",
+    "role": "USER",
+    "onboardingComplete": true,
+    "incognitoMode": false,
+    "_count": {
+      "userPhotos": 1
+    }
+  },
+  {
+    "id": "cmo3a3rwa002p517tuc4kim76",
+    "name": "Beatriz Almeida",
+    "email": "beatriz.almeida@email.com",
+    "status": "ACTIVE",
+    "role": "USER",
+    "onboardingComplete": true,
+    "incognitoMode": false,
+    "_count": {
+      "userPhotos": 1
+    }
+  },
+  {
+    "id": "cmo3a3rvy002h517t0zoked9x",
+    "name": "Fernanda Rocha",
+    "email": "fernanda.rocha@email.com",
+    "status": "ACTIVE",
+    "role": "USER",
+    "onboardingComplete": true,
+    "incognitoMode": false,
+    "_count": {
+      "userPhotos": 1
+    }
+  },
+  {
+    "id": "cmo3a3rwh002x517tntkpav63",
+    "name": "Camila Ferreira",
+    "email": "camila.ferreira@email.com",
+    "status": "ACTIVE",
+    "role": "USER",
+    "onboardingComplete": true,
+    "incognitoMode": false,
+    "_count": {
+      "userPhotos": 1
+    }
+  },
+  {
+    "id": "cmo3a3r1j001r517ta2fw4shy",
+    "name": "Super Admin",
+    "email": "superadmin@evernow.com",
+    "status": "ACTIVE",
+    "role": "SUPERADMIN",
+    "onboardingComplete": false,
+    "incognitoMode": false,
+    "_count": {
+      "userPhotos": 0
+    }
+  },
+  {
+    "id": "cmo3a3r8z001t517textdz7jq",
+    "name": "Admin Operacional",
+    "email": "admin@evernow.com",
+    "status": "ACTIVE",
+    "role": "ADMIN",
+    "onboardingComplete": false,
+    "incognitoMode": false,
+    "_count": {
+      "userPhotos": 0
+    }
+  }
+]
