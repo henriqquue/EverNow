@@ -186,14 +186,16 @@ export default function PerfilPage() {
         });
         setSaveMsg(t('photo_updated'));
       } else {
-        const err = await res.json();
-        console.error("Erro upload:", err);
+        const errData = await res.json().catch(() => ({}));
+        console.error("Erro upload:", errData);
+        setSaveMsg(`${common('error')}: ${errData?.details || errData?.error || "Falha no servidor"}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Erro fatal upload:", err);
+      setSaveMsg(`${common('error')}: ${err.message}`);
     } finally {
       setPhotoLoading(prev => ({ ...prev, [index]: false }));
-      setTimeout(() => setSaveMsg(null), 3000);
+      setTimeout(() => setSaveMsg(null), 5000);
     }
   };
 

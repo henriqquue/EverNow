@@ -1,117 +1,81 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import db from "@/lib/db";
+import { db } from "@/lib/prisma";
 import { storage } from "@/lib/storage";
-import { calculateProfileCompleteness } from "@/lib/profile-completeness";
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    if (!session?.user) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
 
     const formData = await req.formData();
     const file = formData.get("file") as File;
-    const index = parseInt(formData.get("index") as string) || 0;
+    const index = parseInt(formData.get("index") as string || "0");
 
     if (!file) return NextResponse.json({ error: "Arquivo ausente" }, { status: 400 });
 
     const fileName = `${session.user.id}-${index}-${Date.now()}.png`;
+    
+    // 1. Upload para o Supabase
     const publicUrl = await storage.upload(file, "", fileName);
 
+    // 2. Buscar o usuário atual para atualizar a lista de strings
     const user = await db.user.findUnique({
       where: { id: session.user.id },
       select: { photos: true }
     });
 
-    const dbPhotos = user?.photos || [];
-    let currentPhotos = [...dbPhotos];
+    const currentPhotos = [...(user?.photos || ["", "", "", "", "", ""])];
+    // Garantir que o array tenha pelo menos 6 posições
     while (currentPhotos.length < 6) currentPhotos.push("");
-    
-    // Optional: Delete old photo if it exists
-    if (currentPhotos[index]) {
-      await storage.delete(currentPhotos[index]).catch(() => {});
-    }
-
     currentPhotos[index] = publicUrl;
 
+    // 3. Atualizar o Usuário (Lista simples e Foto de perfil se for a primeira)
     await db.user.update({
       where: { id: session.user.id },
       data: {
         photos: currentPhotos,
-        ...(index === 0 && { image: publicUrl }),
-        userPhotos: {
-          upsert: {
-            where: { id: `photo-${session.user.id}-${index}` },
-            update: { url: publicUrl, order: index },
-            create: { id: `photo-${session.user.id}-${index}`, url: publicUrl, order: index }
-          }
-        }
+        ...(index === 0 && { image: publicUrl })
       }
     });
 
-    const completeness = await calculateProfileCompleteness(session.user.id);
-    await db.user.update({
-      where: { id: session.user.id },
-      data: { profileComplete: completeness }
-    });
+    // 4. Tentar atualizar a tabela UserPhoto de forma segura (Opcional para a UI funcionar)
+    try {
+      // Primeiro, removemos se já existir uma foto nessa ordem para evitar conflito de ID
+      const existing = await db.userPhoto.findFirst({
+        where: { userId: session.user.id, order: index }
+      });
+
+      if (existing) {
+        await db.userPhoto.update({
+          where: { id: existing.id },
+          data: { url: publicUrl }
+        });
+      } else {
+        await db.userPhoto.create({
+          data: {
+            userId: session.user.id,
+            url: publicUrl,
+            order: index,
+            isMain: index === 0
+          }
+        });
+      }
+    } catch (dbErr) {
+      console.warn("Aviso: Falha ao atualizar UserPhoto, mas a foto principal foi salva:", dbErr);
+    }
 
     return NextResponse.json({ url: publicUrl, index });
   } catch (error: any) {
     console.error("❌ FALHA CRÍTICA NO UPLOAD:", error);
     return NextResponse.json({ 
       error: "Erro ao processar imagem", 
-      details: error.message,
-      hint: "Verifique se o Bucket 'profiles' existe e se a Policy permite inserção."
+      details: error.message
     }, { status: 500 });
-  }
-}
-
-export async function DELETE(req: Request) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-
-    const { searchParams } = new URL(req.url);
-    const index = parseInt(searchParams.get("index") || "-1");
-
-    if (index < 0 || index >= 6) return NextResponse.json({ error: "Índice inválido" }, { status: 400 });
-
-    const user = await db.user.findUnique({
-      where: { id: session.user.id },
-      select: { photos: true }
-    });
-
-    const dbPhotos = user?.photos || [];
-    let currentPhotos = [...dbPhotos];
-    while (currentPhotos.length < 6) currentPhotos.push("");
-    
-    const photoUrl = currentPhotos[index];
-    if (photoUrl) {
-      await storage.delete(photoUrl).catch(() => {});
-    }
-
-    currentPhotos[index] = "";
-
-    await db.user.update({
-      where: { id: session.user.id },
-      data: {
-        photos: currentPhotos,
-        ...(index === 0 && { image: null }),
-        userPhotos: {
-          deleteMany: { order: index }
-        }
-      }
-    });
-
-    const completeness = await calculateProfileCompleteness(session.user.id);
-    await db.user.update({
-      where: { id: session.user.id },
-      data: { profileComplete: completeness }
-    });
-
-    return NextResponse.json({ success: true, index });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
