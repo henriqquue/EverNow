@@ -32,13 +32,14 @@ class SupabaseStorageProvider implements StorageProvider {
         upsert: true
       });
 
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase Storage Error:", error);
+      throw error;
+    }
 
-    const { data: { publicUrl } } = this.client.storage
-      .from(this.bucket)
-      .getPublicUrl(filePath);
-
-    return publicUrl;
+    // Manual public URL construction to ensure it works even if getPublicUrl has issues
+    const projectRef = this.client.storage.from('').getPublicUrl('').data.publicUrl.split('/storage/v1')[0];
+    return `${projectRef}/storage/v1/object/public/${this.bucket}/${filePath}`;
   }
 
   async delete(url: string): Promise<void> {

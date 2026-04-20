@@ -115,7 +115,7 @@ export default function ConfiguracoesPage() {
       const data = await res.json();
       setVisibilityFields(data.fields || []);
     } catch {
-      // silent — will show empty
+      // silent
     } finally {
       setVisibilityLoading(false);
     }
@@ -287,7 +287,6 @@ export default function ConfiguracoesPage() {
         throw new Error(data.error || t('change_password_error'));
       }
 
-      // Senha trocada com sucesso, deslogar usuário
       signOut({ callbackUrl: "/login?message=senha_alterada" });
     } catch (err: unknown) {
       setPasswordError(err instanceof Error ? err.message : t('change_password_error'));
@@ -298,531 +297,270 @@ export default function ConfiguracoesPage() {
   if (!mounted) return null;
 
   return (
-    <div className="space-y-8 max-w-3xl mx-auto">
-      {/* Header */}
-      <div className="pt-2">
-        <h1 className="text-2xl font-black tracking-tight flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-          <Settings className="w-7 h-7 text-purple-600" />
-          {t('title')}
-        </h1>
-        <p className="text-xs font-medium text-muted-foreground/80 uppercase tracking-widest mt-1">
-          {t('subtitle')}
-        </p>
+    <div className="max-w-4xl mx-auto p-4 space-y-8 pb-24">
+      <div className="flex items-center gap-3 pt-2">
+        <div className="p-2 bg-indigo-600 rounded-xl shadow-glow">
+          <Settings className="w-6 h-6 text-white" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white">{t('title')}</h1>
+          <p className="text-sm text-neutral-500">{t('subtitle')}</p>
+        </div>
       </div>
 
-      {/* Account */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5 text-primary-500" />
-              {t('account')}
+      <div className="grid gap-6">
+        <Card className="border-none shadow-soft overflow-hidden">
+          <CardHeader className="border-b bg-gray-50/50 dark:bg-neutral-800/50">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <Globe className="w-5 h-5 text-indigo-600" /> {t('general')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <Input
-              label="Email"
-              value={session?.user?.email || ""}
-              disabled
-              icon={<Mail className="h-4 w-4" />}
-            />
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <p className="font-medium text-neutral-900 dark:text-white">{t('password')}</p>
-                <p className="text-sm text-neutral-500">{t('change_password')}</p>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => setIsPasswordModalOpen(true)}>
-                <Lock className="h-4 w-4 mr-1" /> {t('change')}
-              </Button>
+          <CardContent className="p-6 space-y-6">
+            <div className="space-y-4">
+              <Select
+                label={t('language')}
+                options={[
+                  { value: "pt", label: "Português" },
+                  { value: "en", label: "English" },
+                  { value: "es", label: "Español" },
+                ]}
+                value={locale}
+                onChange={(newLocale) => {
+                  router.replace(pathname, { locale: newLocale });
+                }}
+              />
             </div>
-          </CardContent>
-        </Card>
-      </motion.div>
 
-      {/* Notifications */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5 text-primary-500" />
-                {t('notifications')}
-              </CardTitle>
-              {notifDirty && (
-                <Button
-                  size="sm"
-                  onClick={saveNotifPrefs}
-                  disabled={notifSaving}
-                  className="bg-gradient-brand text-white"
-                >
-                  {notifSaving ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                  ) : (
-                    <Save className="h-4 w-4 mr-1" />
-                  )}
-                  {common('save')}
-                </Button>
-              )}
-            </div>
-            {notifMsg && (
-              <div
-                className={`mt-2 text-sm flex items-center gap-1 ${
-                  notifMsg.type === "success"
-                    ? "text-green-600 dark:text-green-400"
-                    : "text-red-600 dark:text-red-400"
-                }`}
-              >
-                {notifMsg.type === "success" && <CheckCircle className="h-3.5 w-3.5" />}
-                {notifMsg.text}
-              </div>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {notifLoading ? (
-              <div className="py-4 text-center text-sm text-muted-foreground">{common('loading')}</div>
-            ) : (
-              [
-                { key: "notifyMatches", label: t('notif_matches') },
-                { key: "notifyMessages", label: t('notif_messages') },
-                { key: "notifyLikes", label: t('notif_likes') },
-                { key: "notifyMarketing", label: t('notif_marketing') },
-              ].map((item) => (
-                <div key={item.key} className="flex items-center justify-between py-2">
-                  <span className="text-neutral-700 dark:text-neutral-300">{item.label}</span>
-                  <Switch
-                    checked={!!notifPrefs[item.key]}
-                    onCheckedChange={(v) => toggleNotif(item.key, v)}
-                  />
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Profile Visibility — Real governance controls */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Eye className="h-5 w-5 text-primary-500" />
-                {t('visibility')}
-              </CardTitle>
-              {visibilityDirty && (
-                <Button
-                  size="sm"
-                  onClick={saveVisibility}
-                  disabled={visibilitySaving}
-                  className="bg-gradient-brand text-white"
-                >
-                  {visibilitySaving ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                  ) : (
-                    <Save className="h-4 w-4 mr-1" />
-                  )}
-                  {common('save')}
-                </Button>
-              )}
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t('visibility_desc')}
-            </p>
-            {visibilityMsg && (
-              <div
-                className={`mt-2 text-sm flex items-center gap-1 ${
-                  visibilityMsg.type === "success"
-                    ? "text-green-600 dark:text-green-400"
-                    : "text-red-600 dark:text-red-400"
-                }`}
-              >
-                {visibilityMsg.type === "success" && <CheckCircle className="h-3.5 w-3.5" />}
-                {visibilityMsg.text}
-              </div>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-1">
-            {visibilityLoading ? (
-              <div className="py-6 text-center text-muted-foreground text-sm">
-                {common('loading')}
-              </div>
-            ) : visibilityFields.length === 0 ? (
-              <div className="py-6 text-center text-muted-foreground text-sm">
-                {t('no_visibility_rules')}
-              </div>
-            ) : (
-              visibilityFields.map((field) => (
-                <div
-                  key={field.fieldKey}
-                  className="flex items-center justify-between py-3 px-2 rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-neutral-900 dark:text-white text-sm">
-                        {field.label}
-                      </span>
-                      {field.isRequired && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                          <Lock className="h-2.5 w-2.5 mr-0.5" /> {t('visibility_required')}
-                        </Badge>
-                      )}
-                      {!field.userCanChange && !field.isRequired && (
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                          <Shield className="h-2.5 w-2.5 mr-0.5" /> {t('visibility_admin')}
-                        </Badge>
-                      )}
-                    </div>
-                    {field.reason && (
-                      <p className="text-xs text-muted-foreground mt-0.5">{field.reason}</p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {field.isPublic ? (
-                      <Eye className="h-3.5 w-3.5 text-green-500" />
-                    ) : (
-                      <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
-                    )}
-                    <Switch
-                      checked={field.isPublic}
-                      onCheckedChange={(v) => toggleVisibility(field.fieldKey, v)}
-                      disabled={!field.userCanChange}
-                    />
-                  </div>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Privacy Controls */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25 }}
-      >
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-primary-500" />
-                {t('privacy')}
-              </CardTitle>
-              {privacyDirty && (
-                <Button
-                  size="sm"
-                  onClick={savePrivacy}
-                  disabled={privacySaving}
-                  className="bg-gradient-brand text-white"
-                >
-                  {privacySaving ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                  ) : (
-                    <Save className="h-4 w-4 mr-1" />
-                  )}
-                  {common('save')}
-                </Button>
-              )}
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t('privacy_desc')}
-            </p>
-            {privacyMsg && (
-              <div
-                className={`mt-2 text-sm flex items-center gap-1 ${
-                  privacyMsg.type === "success"
-                    ? "text-green-600 dark:text-green-400"
-                    : "text-red-600 dark:text-red-400"
-                }`}
-              >
-                {privacyMsg.type === "success" && <CheckCircle className="h-3.5 w-3.5" />}
-                {privacyMsg.text}
-              </div>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-1">
-            {privacyLoading || !privacy ? (
-              <div className="py-6 text-center text-muted-foreground text-sm">{common('loading')}</div>
-            ) : (
-              <>
-                {/* Verification status */}
-                <div className="flex items-center justify-between py-3 px-2 rounded-lg bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/20">
-                  <div className="flex items-center gap-2">
-                    <BadgeCheck className="h-4 w-4 text-blue-500" />
-                    <div className="flex flex-col">
-                      <span className="font-bold text-sm">{t('verification_status')}</span>
-                      <p className="text-[10px] text-muted-foreground">{t('verification_desc')}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge className={cn(
-                      "text-[10px] font-bold px-2 py-0.5",
-                      privacy.verificationStatus === "VERIFIED" ? "bg-green-500 text-white" : 
-                      privacy.verificationStatus === "PENDING" ? "bg-amber-500 text-white" : 
-                      privacy.verificationStatus === "REJECTED" ? "bg-red-500 text-white" :
-                      "bg-neutral-200 text-neutral-600 dark:bg-neutral-800"
-                    )}>
-                      {privacy.verificationStatus === "VERIFIED" ? t('verified') : 
-                       privacy.verificationStatus === "PENDING" ? t('pending') : 
-                       privacy.verificationStatus === "REJECTED" ? t('rejected') :
-                       t('not_verified')}
-                    </Badge>
-                    {privacy.verificationStatus !== "VERIFIED" && privacy.verificationStatus !== "PENDING" && (
-                      <Button asChild variant="ghost" size="sm" className="h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 group">
-                        <Link href="/app/verificacao" className="flex items-center gap-1 font-bold">
-                          {t('verify_now')} <ChevronRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
-                        </Link>
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Online status */}
-                <div className="flex items-center justify-between py-3 px-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-neutral-900 dark:text-white text-sm">{t('show_online')}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{t('show_online_desc')}</p>
-                  </div>
-                  <Switch
-                    checked={privacy.showOnlineStatus}
-                    onCheckedChange={(v) => updatePrivacy("showOnlineStatus", v)}
-                  />
-                </div>
-
-                {/* Last active */}
-                <div className="flex items-center justify-between py-3 px-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-neutral-900 dark:text-white text-sm">{t('show_activity')}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{t('show_activity_desc')}</p>
-                  </div>
-                  <Switch
-                    checked={privacy.showLastActive}
-                    onCheckedChange={(v) => updatePrivacy("showLastActive", v)}
-                  />
-                </div>
-
-                {/* Distance */}
-                <div className="flex items-center justify-between py-3 px-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-neutral-900 dark:text-white text-sm">{t('show_distance')}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{t('show_distance_desc')}</p>
-                  </div>
-                  <Switch
-                    checked={privacy.showDistance}
-                    onCheckedChange={(v) => updatePrivacy("showDistance", v)}
-                  />
-                </div>
-
-                {/* Age */}
-                <div className="flex items-center justify-between py-3 px-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-neutral-900 dark:text-white text-sm">{t('show_age')}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{t('show_age_desc')}</p>
-                  </div>
-                  <Switch
-                    checked={privacy.showAge}
-                    onCheckedChange={(v) => updatePrivacy("showAge", v)}
-                  />
-                </div>
-
-                {/* Read receipts */}
-                <div className="flex items-center justify-between py-3 px-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-neutral-900 dark:text-white text-sm">{t('read_receipts')}</span>
-                      <Badge className="text-[10px] px-1.5 py-0 bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border-0">
-                        <Crown className="h-2.5 w-2.5 mr-0.5" /> {common('premium')}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{t('read_receipts_desc')}</p>
-                  </div>
-                  <Switch
-                    checked={privacy.showReadReceipts}
-                    onCheckedChange={(v) => updatePrivacy("showReadReceipts", v)}
-                    disabled={!readReceiptsEntitled && !privacy.showReadReceipts}
-                  />
-                </div>
-
-                {/* Incognito mode */}
-                <div className="flex items-center justify-between py-3 px-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-neutral-900 dark:text-white text-sm">{t('incognito')}</span>
-                      <Badge className="text-[10px] px-1.5 py-0 bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border-0">
-                        <Crown className="h-2.5 w-2.5 mr-0.5" /> {common('premium')}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{t('incognito_desc')}</p>
-                  </div>
-                  <Switch
-                    checked={privacy.incognitoMode}
-                    onCheckedChange={(v) => updatePrivacy("incognitoMode", v)}
-                    disabled={!incognitoEntitled && !privacy.incognitoMode}
-                  />
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Preferences */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5 text-primary-500" />
-              {t('preferences')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Select
-              label={t('language')}
-              options={[
-                { value: "pt", label: "Português" },
-                { value: "en", label: "English" },
-                { value: "es", label: "Español" },
-              ]}
-              value={locale}
-              onChange={(newLocale) => {
-                router.replace(pathname, { locale: newLocale });
-              }}
-            />
             <div className="flex items-center justify-between py-2">
               <div>
                 <p className="font-medium text-neutral-900 dark:text-white">{t('dark_mode')}</p>
                 <p className="text-sm text-neutral-500">{t('dark_mode_desc')}</p>
               </div>
-              <Switch
-                checked={mounted && (theme === "dark" || resolvedTheme === "dark")}
-                onCheckedChange={(checked) => {
-                  setTheme(checked ? "dark" : "light");
-                }}
-              />
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+              >
+                {resolvedTheme === "dark" ? (t('light_mode') || 'Light') : (t('dark_mode') || 'Dark')}
+              </Button>
             </div>
           </CardContent>
         </Card>
-      </motion.div>
 
-      {/* Danger Zone */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-      >
-        <Card className="border-error/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-error">
-              <Trash2 className="h-5 w-5" />
-              {t('danger_zone')}
+        {/* Visibility Settings */}
+        <Card className="border-none shadow-soft overflow-hidden">
+          <CardHeader className="border-b bg-gray-50/50 dark:bg-neutral-800/50">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <Shield className="w-5 h-5 text-indigo-600" /> {t('profile_visibility')}
+              </CardTitle>
+              {visibilityDirty && (
+                <Button 
+                  size="sm" 
+                  onClick={saveVisibility} 
+                  disabled={visibilitySaving}
+                  className="bg-indigo-600 hover:bg-indigo-700"
+                >
+                  {visibilitySaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                  {common('save')}
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            {visibilityLoading ? (
+              <div className="flex justify-center p-4"><Loader2 className="w-6 h-6 animate-spin text-indigo-600" /></div>
+            ) : (
+              <div className="space-y-4">
+                {visibilityMsg && (
+                  <div className={cn("p-3 rounded-lg text-sm font-medium", 
+                    visibilityMsg.type === "success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700")}>
+                    {visibilityMsg.text}
+                  </div>
+                )}
+                {visibilityFields.map((field) => (
+                  <div key={field.fieldKey} className="flex items-center justify-between py-2 border-b last:border-0 border-gray-100 dark:border-neutral-800">
+                    <div>
+                      <p className="font-medium text-neutral-900 dark:text-white">{field.label}</p>
+                      {field.reason && <p className="text-xs text-neutral-500">{field.reason}</p>}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {!field.userCanChange && (
+                        <Badge variant="secondary" className="text-[10px] uppercase">{t('required')}</Badge>
+                      )}
+                      <Switch
+                        disabled={!field.userCanChange || visibilitySaving}
+                        checked={field.isPublic}
+                        onCheckedChange={(val) => toggleVisibility(field.fieldKey, val)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Privacy Settings */}
+        <Card className="border-none shadow-soft overflow-hidden">
+          <CardHeader className="border-b bg-gray-50/50 dark:bg-neutral-800/50">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <Lock className="w-5 h-5 text-indigo-600" /> {t('privacy')}
+              </CardTitle>
+              {privacyDirty && (
+                <Button 
+                  size="sm" 
+                  onClick={savePrivacy} 
+                  disabled={privacySaving}
+                  className="bg-indigo-600 hover:bg-indigo-700"
+                >
+                  {privacySaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                  {common('save')}
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            {privacyLoading ? (
+              <div className="flex justify-center p-4"><Loader2 className="w-6 h-6 animate-spin text-indigo-600" /></div>
+            ) : privacy ? (
+              <div className="space-y-4">
+                {privacyMsg && (
+                  <div className={cn("p-3 rounded-lg text-sm font-medium", 
+                    privacyMsg.type === "success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700")}>
+                    {privacyMsg.text}
+                  </div>
+                )}
+                
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <p className="font-medium text-neutral-900 dark:text-white">{t('show_online_status')}</p>
+                    <p className="text-xs text-neutral-500">{t('show_online_status_desc')}</p>
+                  </div>
+                  <Switch
+                    checked={privacy.showOnlineStatus}
+                    onCheckedChange={(val) => updatePrivacy('showOnlineStatus', val)}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <p className="font-medium text-neutral-900 dark:text-white">{t('show_distance')}</p>
+                    <p className="text-xs text-neutral-500">{t('show_distance_desc')}</p>
+                  </div>
+                  <Switch
+                    checked={privacy.showDistance}
+                    onCheckedChange={(val) => updatePrivacy('showDistance', val)}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <p className="font-medium text-neutral-900 dark:text-white">{t('show_age')}</p>
+                    <p className="text-xs text-neutral-500">{t('show_age_desc')}</p>
+                  </div>
+                  <Switch
+                    checked={privacy.showAge}
+                    onCheckedChange={(val) => updatePrivacy('showAge', val)}
+                  />
+                </div>
+
+                <div className="pt-4 border-t border-gray-100 dark:border-neutral-800">
+                  <div className="flex items-center justify-between py-2">
+                    <div className="flex items-center gap-2">
+                      <div>
+                        <p className="font-medium text-neutral-900 dark:text-white flex items-center gap-2">
+                          {t('incognito_mode')}
+                          {!incognitoEntitled && <Badge variant="outline" className="text-[10px] border-amber-200 text-amber-700 bg-amber-50">PRO</Badge>}
+                        </p>
+                        <p className="text-xs text-neutral-500">{t('incognito_mode_desc')}</p>
+                      </div>
+                    </div>
+                    <Switch
+                      disabled={!incognitoEntitled}
+                      checked={privacy.incognitoMode}
+                      onCheckedChange={(val) => updatePrivacy('incognitoMode', val)}
+                    />
+                  </div>
+                  {!incognitoEntitled && (
+                    <Link href="/assinatura" className="text-[10px] text-indigo-600 font-bold hover:underline">
+                      {t('upgrade_to_use')}
+                    </Link>
+                  )}
+                </div>
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+
+        {/* Change Password */}
+        <Card className="border-none shadow-soft overflow-hidden">
+          <CardHeader className="border-b bg-gray-50/50 dark:bg-neutral-800/50">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <Lock className="w-5 h-5 text-indigo-600" /> {t('change_password')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-neutral-900 dark:text-white">{t('sign_out')}</p>
-                <p className="text-sm text-neutral-500">{t('sign_out_desc')}</p>
-              </div>
-              <Button variant="outline" onClick={handleSignOut}>
-                <LogOut className="h-4 w-4" /> {common('logout')}
+          <CardContent className="p-6">
+            <Button variant="outline" onClick={() => setIsPasswordModalOpen(true)}>
+              {t('change_password_button')}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none shadow-soft overflow-hidden border-red-100">
+          <CardHeader className="border-b bg-red-50/30 dark:bg-red-900/10">
+            <CardTitle className="text-lg font-bold text-red-600 flex items-center gap-2">
+              <Trash2 className="w-5 h-5" /> {t('danger_zone')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-4">
+            <p className="text-sm text-neutral-500">{t('delete_account_desc')}</p>
+            <div className="flex gap-4">
+              <Button variant="destructive" className="bg-red-600 hover:bg-red-700">
+                {t('delete_account_button')}
               </Button>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-neutral-900 dark:text-white">{t('delete_account')}</p>
-                <p className="text-sm text-neutral-500">{t('delete_account_desc')}</p>
-              </div>
-              <Button variant="destructive">
-                <Trash2 className="h-4 w-4" /> {t('delete')}
+              <Button variant="outline" onClick={handleSignOut} className="gap-2">
+                <LogOut className="w-4 h-4" /> {t('logout')}
               </Button>
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
 
+      {/* Password Modal */}
       <Dialog open={isPasswordModalOpen} onOpenChange={setIsPasswordModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-w-md bg-white">
           <DialogHeader>
             <DialogTitle>{t('change_password')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {passwordError && (
-              <div className="text-sm font-medium text-error bg-error/10 p-3 rounded-md">
+              <div className="p-3 rounded-lg bg-red-50 text-red-700 text-sm font-medium">
                 {passwordError}
               </div>
             )}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{t('current_password')}</label>
-              <Input
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder={t('current_password_placeholder')}
-                disabled={passwordLoading}
-              />
+              <label className="text-sm font-medium">{t('current_password')}</label>
+              <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{t('new_password')}</label>
-              <Input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder={t('new_password_placeholder')}
-                disabled={passwordLoading}
-              />
+              <label className="text-sm font-medium">{t('new_password')}</label>
+              <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{t('confirm_password')}</label>
-              <Input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Repita a nova senha"
-                disabled={passwordLoading}
-              />
+              <label className="text-sm font-medium">{t('confirm_password')}</label>
+              <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsPasswordModalOpen(false)}
+            <Button variant="outline" onClick={() => setIsPasswordModalOpen(false)}>{common('cancel')}</Button>
+            <Button 
+              onClick={handleChangePassword} 
               disabled={passwordLoading}
+              className="bg-indigo-600 hover:bg-indigo-700"
             >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleChangePassword}
-              disabled={passwordLoading}
-              className="bg-gradient-brand text-white"
-            >
-              {passwordLoading ? (
-                <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Salvando...</>
-              ) : (
-                "Trocar Senha"
-              )}
+              {passwordLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t('save_password')}
             </Button>
           </DialogFooter>
         </DialogContent>
