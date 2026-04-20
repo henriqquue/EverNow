@@ -11,15 +11,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    return <SessionProvider>{children}</SessionProvider>;
-  }
-
   return (
     <SessionProvider>
       <ThemeProvider
         attribute="class"
-        defaultTheme="light"
+        defaultTheme="system"
         enableSystem
         disableTransitionOnChange
       >

@@ -65,7 +65,7 @@ export default function ConfiguracoesPage() {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
 
   // Password state
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -717,7 +717,7 @@ export default function ConfiguracoesPage() {
                 <p className="text-sm text-neutral-500">{t('dark_mode_desc')}</p>
               </div>
               <Switch
-                checked={theme === "dark"}
+                checked={mounted && (resolvedTheme === "dark")}
                 onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
               />
             </div>
