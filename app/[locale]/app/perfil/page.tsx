@@ -752,7 +752,6 @@ export default function PerfilPage() {
         </AnimatePresence>
 
         <div className="flex gap-3">
-          <Button variant="outline" onClick={() => window.location.reload()}>{t('discard')}</Button>
           <Button
             onClick={handleSave}
             disabled={saving}

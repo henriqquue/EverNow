@@ -23,7 +23,7 @@ class SupabaseStorageProvider implements StorageProvider {
     const buffer = Buffer.from(bytes);
     
     const fileName = customName || `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-    const filePath = `${folder}/${fileName}`;
+    const filePath = folder ? `${folder}/${fileName}` : fileName;
 
     const { data, error } = await this.client.storage
       .from(this.bucket)

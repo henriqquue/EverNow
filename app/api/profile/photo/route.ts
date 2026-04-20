@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     if (!file) return NextResponse.json({ error: "Arquivo ausente" }, { status: 400 });
 
     const fileName = `${session.user.id}-${index}-${Date.now()}.png`;
-    const publicUrl = await storage.upload(file, "profiles", fileName);
+    const publicUrl = await storage.upload(file, "", fileName);
 
     const user = await db.user.findUnique({
       where: { id: session.user.id },
