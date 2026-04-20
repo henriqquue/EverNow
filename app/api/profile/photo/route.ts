@@ -1,7 +1,11 @@
+// v2: forced refresh
 import { NextResponse } from "next/server";
+// v2: forced refresh
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import db from "@/lib/db";
+import { createClient } from '@supabase/supabase-js';
+// v2: forced refresh
 import { storage } from "@/lib/storage";
 
 export const dynamic = 'force-dynamic';

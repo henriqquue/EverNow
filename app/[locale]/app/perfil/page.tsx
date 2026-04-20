@@ -600,101 +600,75 @@ export default function PerfilPage() {
             />
           </div>
 
-        </CardContent>
-      </Card>
-
-      {/* SEÇÃO 4: FORMULÁRIO - CARREIRA E EDUCAÇÃO */}
-      <Card className="border-none shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base font-bold flex items-center gap-2">
-            <Briefcase size={18} className="text-indigo-600" /> {t('career_education')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5" id="section-work">
-              <label className="text-xs font-medium text-gray-500">{t('work_placeholder')}</label>
+              <label className="text-xs font-medium text-gray-500">{t('work')}</label>
               <div className="relative">
-                <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                <Input className="pl-9" placeholder={t('work_placeholder')} value={formData.work} onChange={e => setFormData({ ...formData, work: e.target.value })} />
+                <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                <Input
+                  className="pl-10"
+                  placeholder={t('work_placeholder')}
+                  value={formData.work}
+                  onChange={e => setFormData({ ...formData, work: e.target.value })}
+                />
               </div>
             </div>
-            <div className="space-y-1.5" id="section-education">
-              <label className="text-xs font-medium text-gray-500">{t('education_placeholder')}</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-gray-500">{t('education')}</label>
               <div className="relative">
-                <GraduationCap className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                <Input className="pl-9" placeholder={t('education_placeholder')} value={formData.education} onChange={e => setFormData({ ...formData, education: e.target.value })} />
+                <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                <Input
+                  className="pl-10"
+                  placeholder={t('education_placeholder')}
+                  value={formData.education}
+                  onChange={e => setFormData({ ...formData, education: e.target.value })}
+                />
               </div>
             </div>
           </div>
+
           <div className="space-y-1.5" id="section-languages">
             <label className="text-xs font-medium text-gray-500">{t('languages')}</label>
             <Popover open={languagesOpen} onOpenChange={setLanguagesOpen}>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={languagesOpen}
-                  className="w-full justify-between font-normal text-sm h-auto min-h-10 px-3 py-2 border-gray-200 hover:bg-white text-left"
-                >
-                  <div className="flex flex-wrap gap-1.5 items-center">
-                    <Languages className="h-4 w-4 text-gray-400 mr-2 shrink-0" />
+                <Button variant="outline" className="w-full justify-between font-normal hover:bg-indigo-50/50">
+                  <div className="flex gap-1 flex-wrap">
                     {formData.languages.length > 0 ? (
                       formData.languages.map(lang => (
-                        <Badge key={lang} variant="secondary" className="font-medium text-[10px] py-0 h-5 bg-indigo-50 text-indigo-700 border-indigo-100">
-                          {LANGUAGE_KEYS[lang] && tLang.has(LANGUAGE_KEYS[lang] as any) ? tLang(LANGUAGE_KEYS[lang] as any) : lang}
-                          <div
-                            className="ml-1 cursor-pointer hover:text-red-500 flex items-center"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setFormData({
-                                ...formData,
-                                languages: formData.languages.filter(l => l !== lang)
-                              });
-                            }}
-                          >
-                            <X className="w-2.5 h-2.5" />
-                          </div>
+                        <Badge key={lang} variant="secondary" className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 flex items-center gap-1">
+                          {tLang.has(LANGUAGE_KEYS[lang] as any) ? tLang(LANGUAGE_KEYS[lang] as any) : lang}
+                          <X size={10} className="cursor-pointer" onClick={(e) => {
+                            e.stopPropagation();
+                            setFormData({ ...formData, languages: formData.languages.filter(l => l !== lang) });
+                          }} />
                         </Badge>
                       ))
-                    ) : (
-                      <span className="text-gray-400">{t('languages_placeholder')}</span>
-                    )}
+                    ) : t('languages_placeholder')}
                   </div>
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+              <PopoverContent className="w-full p-0 bg-white" align="start">
                 <Command>
-                  <CommandInput placeholder={t('languages_placeholder')} />
+                  <CommandInput placeholder={t('search_languages')} />
                   <CommandList>
-                    <CommandEmpty>{common('none_found')}</CommandEmpty>
-                    <CommandGroup className="max-h-[200px] overflow-y-auto">
-                      {COMMON_LANGUAGES.map((lang) => {
-                        const isSelected = formData.languages.includes(lang);
-                        return (
-                          <CommandItem
-                            key={lang}
-                            value={lang}
-                            onSelect={() => {
-                              setFormData({
-                                ...formData,
-                                languages: isSelected
-                                  ? formData.languages.filter(l => l !== lang)
-                                  : [...formData.languages, lang]
-                              });
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                isSelected ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            {LANGUAGE_KEYS[lang] && tLang.has(LANGUAGE_KEYS[lang] as any) ? tLang(LANGUAGE_KEYS[lang] as any) : lang}
-                          </CommandItem>
-                        );
-                      })}
+                    <CommandEmpty>{t('no_languages_found')}</CommandEmpty>
+                    <CommandGroup>
+                      {COMMON_LANGUAGES.map((lang) => (
+                        <CommandItem
+                          key={lang}
+                          value={lang}
+                          onSelect={() => {
+                            const newLangs = formData.languages.includes(lang)
+                              ? formData.languages.filter(l => l !== lang)
+                              : [...formData.languages, lang];
+                            setFormData({ ...formData, languages: newLangs });
+                          }}
+                        >
+                          <Check className={cn("mr-2 h-4 w-4", formData.languages.includes(lang) ? "opacity-100" : "opacity-0")} />
+                          {tLang.has(LANGUAGE_KEYS[lang] as any) ? tLang(LANGUAGE_KEYS[lang] as any) : lang}
+                        </CommandItem>
+                      ))}
                     </CommandGroup>
                   </CommandList>
                 </Command>
@@ -803,19 +777,13 @@ export default function PerfilPage() {
                   );
                 })}
               </div>
-            ) : (
-              <div className="text-center py-8 text-gray-400">
-                <p>{t('no_options')}</p>
-              </div>
-            )}
+            ) : <p className="text-center text-gray-400 py-10">{t('no_options')}</p>}
           </div>
 
-          <DialogFooter className="p-4 bg-gray-50/50 border-t flex flex-row justify-end gap-2 sm:gap-2">
-            <Button variant="ghost" className="w-full sm:w-auto" onClick={() => setEditingCategory(null)}>
-              {common('cancel')}
-            </Button>
+          <DialogFooter className="p-4 bg-gray-50/50 border-t">
+            <Button variant="ghost" onClick={() => setEditingCategory(null)} disabled={savingCategory}>{common('cancel')}</Button>
             <Button
-              className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700"
+              className="bg-indigo-600 hover:bg-indigo-700 font-bold px-8"
               onClick={saveCategoryAnswers}
               disabled={savingCategory}
             >
@@ -824,49 +792,44 @@ export default function PerfilPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      {/* MODAL DE SUGESTÕES DE MELHORIA */}
+
+      {/* MODAL DE SUGESTÕES */}
       <Dialog open={suggestionsOpen} onOpenChange={setSuggestionsOpen}>
-        <DialogContent className="max-w-md bg-white rounded-2xl overflow-hidden p-0">
-          <DialogHeader className="p-6 pb-4 border-b bg-indigo-50/50">
-            <DialogTitle className="flex items-center gap-2 text-xl font-bold text-indigo-900">
-              <Sparkles className="text-indigo-500" /> {t('suggestions_title')}
+        <DialogContent className="max-w-md w-[95vw] rounded-2xl p-0 overflow-hidden bg-white">
+          <DialogHeader className="p-6 bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-yellow-300 animate-pulse" />
+              {t('suggestions_title')}
             </DialogTitle>
-            <DialogDescription className="text-gray-600">
+            <DialogDescription className="text-indigo-100/80">
               {t('suggestions_desc')}
             </DialogDescription>
           </DialogHeader>
-          <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
+
+          <div className="p-4 space-y-3 max-h-[50vh] overflow-y-auto">
             {getSuggestions().length > 0 ? (
-              getSuggestions().map((sug, idx) => (
-                <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl gap-3">
-                  <p className="text-sm text-gray-700 font-medium">{sug.text}</p>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="shrink-0 bg-white hover:bg-indigo-50 hover:text-indigo-600 border-indigo-200"
-                    onClick={() => handleSuggestionAction(sug.id)}
-                  >
-                    {sug.action}
-                  </Button>
+              getSuggestions().map((s) => (
+                <div
+                  key={s.id}
+                  onClick={() => handleSuggestionAction(s.id)}
+                  className="flex items-center justify-between p-3 rounded-xl border border-indigo-50 bg-indigo-50/30 hover:bg-indigo-50 transition-colors cursor-pointer group"
+                >
+                  <p className="text-sm font-medium text-indigo-900 group-hover:text-indigo-700">{s.text}</p>
+                  <ChevronRight size={16} className="text-indigo-300 group-hover:translate-x-1 transition-transform" />
                 </div>
               ))
             ) : (
-              <div className="p-8 text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Check className="w-8 h-8 text-green-600" />
+              <div className="py-10 text-center space-y-3">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                  <Check className="text-green-600 w-8 h-8" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-1">{t('profile_perfect')}</h3>
-                <p className="text-sm text-gray-500">{t('profile_perfect_desc')}</p>
+                <p className="text-sm font-bold text-gray-600">{t('profile_perfect')}</p>
               </div>
             )}
           </div>
-          <DialogFooter className="p-4 border-t bg-gray-50">
-            <Button variant="ghost" onClick={() => setSuggestionsOpen(false)} className="w-full sm:w-auto">
-              {t('close')}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 }
