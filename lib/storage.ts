@@ -78,6 +78,7 @@ export function getStorageProvider(): StorageProvider {
   const bucket = process.env.SUPABASE_STORAGE_BUCKET || 'profiles';
 
   if (supabaseUrl && supabaseKey) {
+    console.log(`[Storage] Inicializando com URL: ${supabaseUrl} e Bucket: ${bucket}`);
     return new SupabaseStorageProvider(supabaseUrl, supabaseKey, bucket);
   }
 
