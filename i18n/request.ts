@@ -5,7 +5,8 @@ import {locales} from '../navigation';
 export default getRequestConfig(async ({locale}) => {
   // If locale is missing or "undefined", try to get it from headers set by middleware
   if (!locale || locale === 'undefined') {
-    const headerLocale = headers().get('x-next-intl-locale');
+    const h = await headers();
+    const headerLocale = h.get('x-next-intl-locale');
     if (headerLocale) {
       locale = headerLocale;
       console.log(`[i18n] Recovered locale from headers: "${locale}"`);

@@ -11,13 +11,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  // Prevent hydration mismatch
   if (!mounted) {
-    return (
-      <SessionProvider>
-        <div style={{ visibility: "hidden" }}>{children}</div>
-      </SessionProvider>
-    );
+    return <SessionProvider>{children}</SessionProvider>;
   }
 
   return (
