@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { db } from "@/lib/prisma";
+import db from "@/lib/db";
 import { storage } from "@/lib/storage";
 
 export const dynamic = 'force-dynamic';
