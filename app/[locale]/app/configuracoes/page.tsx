@@ -312,7 +312,7 @@ export default function ConfiguracoesPage() {
         <Card className="border-none shadow-soft overflow-hidden">
           <CardHeader className="border-b bg-gray-50/50 dark:bg-neutral-800/50">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <Globe className="w-5 h-5 text-indigo-600" /> {t('general')}
+              <Globe className="w-5 h-5 text-indigo-600" /> {t('preferences')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
@@ -336,13 +336,12 @@ export default function ConfiguracoesPage() {
                 <p className="font-medium text-neutral-900 dark:text-white">{t('dark_mode')}</p>
                 <p className="text-sm text-neutral-500">{t('dark_mode_desc')}</p>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-              >
-                {resolvedTheme === "dark" ? (t('light_mode') || 'Light') : (t('dark_mode') || 'Dark')}
-              </Button>
+              <Switch
+                checked={mounted && (theme === "dark" || resolvedTheme === "dark")}
+                onCheckedChange={(checked) => {
+                  setTheme(checked ? "dark" : "light");
+                }}
+              />
             </div>
           </CardContent>
         </Card>
@@ -352,7 +351,7 @@ export default function ConfiguracoesPage() {
           <CardHeader className="border-b bg-gray-50/50 dark:bg-neutral-800/50">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Shield className="w-5 h-5 text-indigo-600" /> {t('profile_visibility')}
+                <Shield className="w-5 h-5 text-indigo-600" /> {t('visibility')}
               </CardTitle>
               {visibilityDirty && (
                 <Button 
@@ -386,7 +385,7 @@ export default function ConfiguracoesPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       {!field.userCanChange && (
-                        <Badge variant="secondary" className="text-[10px] uppercase">{t('required')}</Badge>
+                        <Badge variant="secondary" className="text-[10px] uppercase">{t('visibility_required')}</Badge>
                       )}
                       <Switch
                         disabled={!field.userCanChange || visibilitySaving}
@@ -435,8 +434,8 @@ export default function ConfiguracoesPage() {
                 
                 <div className="flex items-center justify-between py-2">
                   <div>
-                    <p className="font-medium text-neutral-900 dark:text-white">{t('show_online_status')}</p>
-                    <p className="text-xs text-neutral-500">{t('show_online_status_desc')}</p>
+                    <p className="font-medium text-neutral-900 dark:text-white">{t('show_online')}</p>
+                    <p className="text-xs text-neutral-500">{t('show_online_desc')}</p>
                   </div>
                   <Switch
                     checked={privacy.showOnlineStatus}
@@ -471,10 +470,10 @@ export default function ConfiguracoesPage() {
                     <div className="flex items-center gap-2">
                       <div>
                         <p className="font-medium text-neutral-900 dark:text-white flex items-center gap-2">
-                          {t('incognito_mode')}
+                          {t('incognito')}
                           {!incognitoEntitled && <Badge variant="outline" className="text-[10px] border-amber-200 text-amber-700 bg-amber-50">PRO</Badge>}
                         </p>
-                        <p className="text-xs text-neutral-500">{t('incognito_mode_desc')}</p>
+                        <p className="text-xs text-neutral-500">{t('incognito_desc')}</p>
                       </div>
                     </div>
                     <Switch
@@ -485,7 +484,7 @@ export default function ConfiguracoesPage() {
                   </div>
                   {!incognitoEntitled && (
                     <Link href="/assinatura" className="text-[10px] text-indigo-600 font-bold hover:underline">
-                      {t('upgrade_to_use')}
+                      {common('upgrade')}
                     </Link>
                   )}
                 </div>
@@ -503,7 +502,7 @@ export default function ConfiguracoesPage() {
           </CardHeader>
           <CardContent className="p-6">
             <Button variant="outline" onClick={() => setIsPasswordModalOpen(true)}>
-              {t('change_password_button')}
+              {t('change')}
             </Button>
           </CardContent>
         </Card>
@@ -518,10 +517,10 @@ export default function ConfiguracoesPage() {
             <p className="text-sm text-neutral-500">{t('delete_account_desc')}</p>
             <div className="flex gap-4">
               <Button variant="destructive" className="bg-red-600 hover:bg-red-700">
-                {t('delete_account_button')}
+                {t('delete')}
               </Button>
               <Button variant="outline" onClick={handleSignOut} className="gap-2">
-                <LogOut className="w-4 h-4" /> {t('logout')}
+                <LogOut className="w-4 h-4" /> {common('logout')}
               </Button>
             </div>
           </CardContent>
@@ -560,7 +559,7 @@ export default function ConfiguracoesPage() {
               disabled={passwordLoading}
               className="bg-indigo-600 hover:bg-indigo-700"
             >
-              {passwordLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t('save_password')}
+              {passwordLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t('change')}
             </Button>
           </DialogFooter>
         </DialogContent>
