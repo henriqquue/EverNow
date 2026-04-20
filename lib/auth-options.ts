@@ -54,7 +54,6 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           role: user.role,
-          image: user.image,
           planId: user.planId,
           planSlug: user?.plan?.slug ?? null,
         };
@@ -79,7 +78,6 @@ export const authOptions: NextAuthOptions = {
       }
       if (trigger === "update" && session) {
         token.name = session?.name ?? token.name;
-        token.image = session?.image ?? token.image;
       }
       return token;
     },
