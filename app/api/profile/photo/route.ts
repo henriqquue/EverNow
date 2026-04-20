@@ -58,11 +58,12 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ url: publicUrl, index });
   } catch (error: any) {
-    console.error("❌ ERRO NO UPLOAD DE FOTO:", {
-      message: error.message,
-      stack: error.stack
-    });
-    return NextResponse.json({ error: error.message, details: "Verifique se a SUPABASE_SERVICE_ROLE_KEY está correta na Vercel" }, { status: 500 });
+    console.error("❌ FALHA CRÍTICA NO UPLOAD:", error);
+    return NextResponse.json({ 
+      error: "Erro ao processar imagem", 
+      details: error.message,
+      hint: "Verifique se o Bucket 'profiles' existe e se a Policy permite inserção."
+    }, { status: 500 });
   }
 }
 
