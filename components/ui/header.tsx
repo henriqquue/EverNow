@@ -57,7 +57,7 @@ export function Header({ className }: HeaderProps) {
         return { title: notif.title, message: notif.message };
     }
   }, [nt, t]);
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
