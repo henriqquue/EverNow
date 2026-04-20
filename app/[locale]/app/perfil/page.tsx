@@ -33,7 +33,8 @@ import {
   Check,
   ChevronsUpDown,
   Trash2,
-  X
+  X,
+  ChevronRight
 } from "lucide-react";
 
 const COMMON_LANGUAGES = [
