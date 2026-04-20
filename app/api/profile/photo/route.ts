@@ -58,8 +58,11 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ url: publicUrl, index });
   } catch (error: any) {
-    console.error("Photo upload error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("❌ ERRO NO UPLOAD DE FOTO:", {
+      message: error.message,
+      stack: error.stack
+    });
+    return NextResponse.json({ error: error.message, details: "Verifique se a SUPABASE_SERVICE_ROLE_KEY está correta na Vercel" }, { status: 500 });
   }
 }
 

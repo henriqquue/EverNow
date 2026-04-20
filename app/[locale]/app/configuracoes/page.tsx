@@ -717,8 +717,10 @@ export default function ConfiguracoesPage() {
                 <p className="text-sm text-neutral-500">{t('dark_mode_desc')}</p>
               </div>
               <Switch
-                checked={mounted && (resolvedTheme === "dark")}
-                onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+                checked={mounted && (theme === "dark" || resolvedTheme === "dark")}
+                onCheckedChange={(checked) => {
+                  setTheme(checked ? "dark" : "light");
+                }}
               />
             </div>
           </CardContent>
