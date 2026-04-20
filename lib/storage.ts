@@ -22,6 +22,12 @@ class SupabaseStorageProvider implements StorageProvider {
     });
     this.bucket = bucket;
     console.log(`[Storage] Inicializado com bucket: ${this.bucket}`);
+    
+    // Tenta listar buckets para conferir conexão
+    this.client.storage.listBuckets().then(({ data, error }) => {
+      if (error) console.error("[Storage] Erro ao listar buckets:", error);
+      else console.log("[Storage] Buckets encontrados:", data?.map(b => b.name));
+    });
   }
 
   async upload(file: File, folder: string, customName?: string): Promise<string> {
@@ -30,7 +36,7 @@ class SupabaseStorageProvider implements StorageProvider {
       const buffer = Buffer.from(bytes);
       
       const fileName = customName || `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-      const filePath = folder ? `${folder}/${fileName}` : fileName;
+      const filePath = fileName; // Upload direto para a raiz do bucket
 
       console.log(`[Storage] Tentando upload de ${file.size} bytes para ${this.bucket}/${filePath}`);
 
@@ -73,9 +79,9 @@ class SupabaseStorageProvider implements StorageProvider {
 
 // Factory to get the appropriate provider
 export function getStorageProvider(): StorageProvider {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const bucket = process.env.SUPABASE_STORAGE_BUCKET || 'profiles';
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  const bucket = process.env.SUPABASE_STORAGE_BUCKET?.trim() || 'profiles';
 
   if (supabaseUrl && supabaseKey) {
     console.log(`[Storage] Inicializando com URL: ${supabaseUrl} e Bucket: ${bucket}`);
