@@ -145,11 +145,14 @@ export function Header({ className }: HeaderProps) {
           {/* Theme Toggle */}
           {mounted && (
             <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              onClick={() => {
+                const currentTheme = theme === "system" ? resolvedTheme : theme;
+                setTheme(currentTheme === "dark" ? "light" : "dark");
+              }}
               className="relative p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition-colors"
               title={t('theme_toggle')}
             >
-              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {(theme === "system" ? resolvedTheme : theme) === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </button>
           )}
 

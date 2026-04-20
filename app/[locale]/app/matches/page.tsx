@@ -18,6 +18,7 @@ import { Loading } from '@/components/ui/loading';
 import { EmptyState } from '@/components/ui/empty-state';
 import { RadixTabs as Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { cn, formatRelativeTime } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface Match {
   id: string;
@@ -106,6 +107,41 @@ export default function MatchesPage() {
       setMatches(prev => prev.filter(m => m.id !== matchId));
     } catch (error) {
       console.error('Error unmatching:', error);
+    }
+  };
+
+  const handleLikeBack = async (targetUserId: string) => {
+    try {
+      const res = await fetch('/api/likes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUserId, type: 'LIKE' })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.isMatch) {
+          toast.success(t('it_is_a_match') || 'Match!', {
+            description: t('you_can_now_chat') || 'Você já pode conversar com essa pessoa!',
+            action: {
+              label: t('chat_now') || 'Conversar',
+              onClick: () => router.push(`/app/chat/${data.match?.chatThread?.id || data.match?.id}`)
+            }
+          });
+          // Remove from likes
+          setLikes(prev => prev.filter(l => l.fromUser.id !== targetUserId));
+          // Refresh matches
+          const mRes = await fetch('/api/matches');
+          const mData = await mRes.json();
+          if (Array.isArray(mData)) setMatches(mData);
+          setActiveTab('matches');
+        } else {
+          toast.success(t('like_sent') || 'Curtida enviada!');
+          setLikes(prev => prev.filter(l => l.fromUser.id !== targetUserId));
+        }
+      }
+    } catch (err) {
+      console.error('Error liking back:', err);
     }
   };
 
@@ -269,8 +305,21 @@ export default function MatchesPage() {
                       className="w-full h-full object-cover" 
                       alt="Like" 
                     />
-                    <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 to-transparent text-white">
-                      <p className="text-sm font-medium truncate">{isPremium ? like.fromUser.name : t('someone')}</p>
+                    <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 to-transparent flex items-end justify-between text-white">
+                      <p className="text-sm font-medium truncate drop-shadow-md">{isPremium ? like.fromUser.name : t('someone')}</p>
+                      {isPremium && (
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          className="h-8 w-8 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-md text-white border-none"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleLikeBack(like.fromUser.id);
+                          }}
+                        >
+                          <Heart className="h-4 w-4 fill-white text-white" />
+                        </Button>
+                      )}
                     </div>
                   </Card>
                 ))}
