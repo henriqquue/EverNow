@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
@@ -413,3 +414,4 @@ async function getDailySubscriptionEventsData(startDate: Date, endDate: Date) {
     count: e._count,
   }));
 }
+

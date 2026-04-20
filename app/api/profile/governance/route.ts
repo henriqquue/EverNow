@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-options';
@@ -53,3 +54,4 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
   }
 }
+
