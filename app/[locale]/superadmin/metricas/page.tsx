@@ -303,7 +303,7 @@ export default function MetricasPage() {
                       <Tooltip content={<CustomTooltip />} />
                       <Bar dataKey="value" name="Usuários" radius={[8, 8, 0, 0]}>
                         {conversionData.map((_, i) => (
-                          <Cell key={i} fill={i === 0 ? "#6366f1" : "#10b981"} />
+                          <Cell key={i} fill={i === 0 ? "#6366f1" : "#8b5cf6"} />
                         ))}
                       </Bar>
                     </BarChart>
