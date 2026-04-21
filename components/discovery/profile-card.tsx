@@ -7,7 +7,7 @@ import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import {
   Heart, X, Star, MapPin, Briefcase, GraduationCap,
   ChevronLeft, ChevronRight, MoreHorizontal, Flag,
-  Ban, Bookmark, CheckCircle, Circle, Info
+  Ban, Bookmark, CheckCircle, Circle, Info, Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
