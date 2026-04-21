@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -89,6 +90,9 @@ const DEFAULT_BANNER = {
   endsAt: "",
   isActive: true,
   priority: 0,
+  orientation: "horizontal",
+  width: "",
+  height: "",
 };
 
 export default function BannersPage() {
@@ -160,6 +164,9 @@ export default function BannersPage() {
         endsAt: banner.endsAt?.split("T")[0] || "",
         isActive: banner.isActive,
         priority: banner.priority,
+        orientation: (banner as any).orientation || "horizontal",
+        width: (banner as any).width || "",
+        height: (banner as any).height || "",
       });
     } else {
       setEditingId(null);
@@ -389,14 +396,15 @@ export default function BannersPage() {
         )}
       </div>
 
-      {/* Editor Modal */}
-      <AnimatePresence>
-        {showEditor && (
+      {/* Editor Modal — renderizado via Portal para cobrir o layout inteiro */}
+      {typeof document !== "undefined" && createPortal(
+        <AnimatePresence>
+          {showEditor && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 overflow-y-auto"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-start justify-center p-4 overflow-y-auto"
             onClick={() => setShowEditor(false)}
           >
             <motion.div
@@ -420,10 +428,15 @@ export default function BannersPage() {
                 <div>
                   <Label className="mb-2 block">Pré-visualização</Label>
                   <div
-                    className="w-full py-3 px-4 rounded-lg flex items-center justify-between"
+                    className="py-3 px-4 rounded-lg flex items-center justify-between transition-all"
                     style={{
                       backgroundColor: formData.backgroundColor,
                       color: formData.textColor,
+                      width: formData.width || "100%",
+                      minHeight: formData.height || undefined,
+                      flexDirection: formData.orientation === "vertical" ? "column" : "row",
+                      alignItems: formData.orientation === "vertical" ? "flex-start" : "center",
+                      gap: formData.orientation === "vertical" ? "8px" : undefined,
                     }}
                   >
                     <div className="min-w-0">
@@ -590,6 +603,43 @@ export default function BannersPage() {
                   </div>
                 </div>
 
+                {/* Orientação e Medidas */}
+                <div>
+                  <Label className="mb-2 block">Orientação e Medidas</Label>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label>Orientação</Label>
+                      <Select
+                        value={formData.orientation}
+                        onChange={(v) => setFormData({ ...formData, orientation: v })}
+                        options={[
+                          { value: "horizontal", label: "Horizontal" },
+                          { value: "vertical",   label: "Vertical" },
+                        ]}
+                      />
+                    </div>
+                    <div>
+                      <Label>Largura</Label>
+                      <Input
+                        value={formData.width}
+                        onChange={(e) => setFormData({ ...formData, width: e.target.value })}
+                        placeholder="Ex: 100%, 728px"
+                      />
+                    </div>
+                    <div>
+                      <Label>Altura</Label>
+                      <Input
+                        value={formData.height}
+                        onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                        placeholder="Ex: 90px, 250px"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Deixe em branco para usar as dimensões padrão do layout.
+                  </p>
+                </div>
+
                 {/* Páginas */}
                 <div>
                   <Label className="mb-2 block">Páginas onde aparece</Label>
@@ -677,7 +727,9 @@ export default function BannersPage() {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      )}
 
       <ConfirmationModal
         isOpen={!!itemToDelete}
