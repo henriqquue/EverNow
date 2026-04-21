@@ -152,11 +152,12 @@ export default function CampanhasPage() {
 
       if (campaignsRes.ok) {
         const data = await campaignsRes.json();
-        setCampaigns(data.campaigns);
+        setCampaigns(Array.isArray(data?.campaigns) ? data.campaigns : []);
       }
       if (plansRes.ok) {
         const data = await plansRes.json();
-        setPlans(data.plans);
+        // Ensure data is an array before setting plans
+        setPlans(Array.isArray(data) ? data : (Array.isArray(data?.plans) ? data.plans : []));
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -182,27 +183,27 @@ export default function CampanhasPage() {
     if (campaign) {
       setEditingId(campaign.id);
       setFormData({
-        name: campaign.name,
-        slug: campaign.slug,
+        name: campaign.name || "",
+        slug: campaign.slug || "",
         description: campaign.description || "",
-        title: campaign.title,
-        message: campaign.message,
-        ctaText: campaign.ctaText,
-        ctaUrl: campaign.ctaUrl,
-        displayType: campaign.displayType,
-        triggers: campaign.triggers,
-        targetFeatures: campaign.targetFeatures,
-        targetPages: campaign.targetPages,
+        title: campaign.title || "",
+        message: campaign.message || "",
+        ctaText: campaign.ctaText || "Fazer upgrade",
+        ctaUrl: campaign.ctaUrl || "/app/planos",
+        displayType: campaign.displayType || "MODAL",
+        triggers: Array.isArray(campaign.triggers) ? campaign.triggers : [],
+        targetFeatures: Array.isArray(campaign.targetFeatures) ? campaign.targetFeatures : [],
+        targetPages: Array.isArray(campaign.targetPages) ? campaign.targetPages : [],
         targetPlanId: campaign.targetPlan?.id || "",
         offerPlanId: campaign.offerPlan?.id || "",
-        discountPercent: campaign.discountPercent,
+        discountPercent: campaign.discountPercent || null,
         discountCode: campaign.discountCode || "",
         startsAt: campaign.startsAt?.split("T")[0] || "",
         endsAt: campaign.endsAt?.split("T")[0] || "",
-        status: campaign.status,
-        priority: campaign.priority,
-        maxImpressions: campaign.maxImpressions,
-        maxPerUser: campaign.maxPerUser,
+        status: campaign.status || "DRAFT",
+        priority: campaign.priority || 0,
+        maxImpressions: campaign.maxImpressions || null,
+        maxPerUser: campaign.maxPerUser || 3,
       });
     } else {
       setEditingId(null);
@@ -351,7 +352,7 @@ export default function CampanhasPage() {
                         {campaign.title}
                       </p>
                       <div className="flex flex-wrap gap-2 text-xs">
-                        {campaign.triggers.map((t) => (
+                        {(Array.isArray(campaign.triggers) ? campaign.triggers : []).map((t) => (
                           <Badge key={t} variant="secondary" className="text-xs">
                             {TRIGGERS.find((tr) => tr.value === t)?.label || t}
                           </Badge>
@@ -645,7 +646,7 @@ export default function CampanhasPage() {
                       }
                       options={[
                         { value: "", label: "Todos os planos" },
-                        ...plans.map((p) => ({ value: p.id, label: p.name })),
+                        ...(plans || []).map((p) => ({ value: p?.id || "", label: p?.name || "Sem nome" })),
                       ]}
                     />
                   </div>
@@ -658,7 +659,7 @@ export default function CampanhasPage() {
                       }
                       options={[
                         { value: "", label: "Nenhum" },
-                        ...plans.map((p) => ({ value: p.id, label: p.name })),
+                        ...(plans || []).map((p) => ({ value: p?.id || "", label: p?.name || "Sem nome" })),
                       ]}
                     />
                   </div>

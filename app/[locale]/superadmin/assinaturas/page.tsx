@@ -62,9 +62,9 @@ export default function AssinaturasPage() {
       const res = await fetch(`/api/superadmin/subscriptions?${params}`);
       if (res.ok) {
         const data = await res.json();
-        setSubscriptions(data.subscriptions);
-        setTotalPages(data.totalPages);
-        setStats(data.stats);
+        setSubscriptions(Array.isArray(data?.subscriptions) ? data.subscriptions : []);
+        setTotalPages(data?.totalPages || 1);
+        setStats(data?.stats || { active: 0, revenue: 0, churnRate: 0 });
       }
     } catch (e) {
       console.error('Erro ao buscar assinaturas:', e);
@@ -91,9 +91,9 @@ export default function AssinaturasPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatsCard title="Assinaturas ativas" value={stats.active} icon={Crown} color="primary" delay={0} />
-        <StatsCard title="Receita recorrente" value={stats.revenue} prefix="R$ " icon={CreditCard} color="success" delay={0.1} />
-        <StatsCard title="Churn rate" value={stats.churnRate} suffix="%" icon={TrendingUp} color="warning" delay={0.2} />
+        <StatsCard title="Assinaturas ativas" value={stats?.active || 0} icon={Crown} color="primary" delay={0} />
+        <StatsCard title="Receita recorrente" value={stats?.revenue || 0} prefix="R$ " icon={CreditCard} color="success" delay={0.1} />
+        <StatsCard title="Churn rate" value={stats?.churnRate || 0} suffix="%" icon={TrendingUp} color="warning" delay={0.2} />
       </div>
 
       <Card>
@@ -147,22 +147,22 @@ export default function AssinaturasPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    subscriptions.map((sub) => (
-                      <TableRow key={sub.id}>
+                    (subscriptions || []).map((sub) => (
+                      <TableRow key={sub?.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <Avatar name={sub.user.name || 'U'} size="sm" />
+                            <Avatar name={sub?.user?.name || 'U'} size="sm" />
                             <div>
-                              <p className="font-medium text-neutral-900 dark:text-white">{sub.user.name || 'Sem nome'}</p>
-                              <p className="text-sm text-neutral-500">{sub.user.email}</p>
+                              <p className="font-medium text-neutral-900 dark:text-white">{sub?.user?.name || 'Sem nome'}</p>
+                              <p className="text-sm text-neutral-500">{sub?.user?.email}</p>
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell><Badge variant="premium">{sub.plan}</Badge></TableCell>
-                        <TableCell><Badge className={getStatusColor(sub.status)}>{getStatusDisplayName(sub.status)}</Badge></TableCell>
-                        <TableCell className="text-neutral-500">{formatDate(sub.startedAt)}</TableCell>
-                        <TableCell className="text-neutral-500">{sub.expiresAt ? formatDate(sub.expiresAt) : '—'}</TableCell>
-                        <TableCell className="font-medium">{formatCurrency(sub.amount)}</TableCell>
+                        <TableCell><Badge variant="premium">{sub?.plan || 'Nenhum'}</Badge></TableCell>
+                        <TableCell><Badge className={getStatusColor(sub?.status)}>{getStatusDisplayName(sub?.status)}</Badge></TableCell>
+                        <TableCell className="text-neutral-500">{sub?.startedAt ? formatDate(sub.startedAt) : '—'}</TableCell>
+                        <TableCell className="text-neutral-500">{sub?.expiresAt ? formatDate(sub.expiresAt) : '—'}</TableCell>
+                        <TableCell className="font-medium">{formatCurrency(sub?.amount || 0)}</TableCell>
                       </TableRow>
                     ))
                   )}

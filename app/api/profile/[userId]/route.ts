@@ -39,6 +39,7 @@ export async function GET(
           profileComplete: true,
           onboardingComplete: true,
           birthDate: true,
+          relationshipStatus: true,
         },
       });
       if (user) {
@@ -50,6 +51,7 @@ export async function GET(
           profileComplete: user.profileComplete,
           onboardingComplete: user.onboardingComplete,
           birthDate: user.birthDate,
+          relationshipStatus: user.relationshipStatus,
         };
       }
     }
@@ -88,7 +90,7 @@ export async function PUT(
     const body = await request.json();
     const allowedFields = [
       'name', 'nickname', 'bio', 'birthDate', 'gender', 'orientation',
-      'lookingFor', 'city', 'state', 'country',
+      'lookingFor', 'relationshipStatus', 'city', 'state', 'neighborhood', 'country',
       'pronouns', 'headline', 'statusMood', 'languages', 'work', 'education',
       'interests',
     ];
@@ -98,7 +100,7 @@ export async function PUT(
       if (body[field] !== undefined) {
         if (field === 'birthDate') {
           data[field] = body[field] ? new Date(body[field]) : null;
-        } else if (field === 'gender' || field === 'lookingFor') {
+        } else if (field === 'gender' || field === 'lookingFor' || field === 'relationshipStatus') {
           data[field] = body[field] && body[field] !== "" ? body[field] : null;
         } else {
           data[field] = body[field];

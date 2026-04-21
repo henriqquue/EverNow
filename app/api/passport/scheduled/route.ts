@@ -43,6 +43,7 @@ export async function POST(request: Request) {
     const {
       city,
       state,
+      neighborhood,
       country,
       latitude,
       longitude,
@@ -65,6 +66,7 @@ export async function POST(request: Request) {
         userId: session.user.id,
         city,
         state,
+        neighborhood,
         country,
         latitude,
         longitude,
@@ -81,7 +83,7 @@ export async function POST(request: Request) {
     await trackEvent({
       userId: session.user.id,
       eventType: 'passport_scheduled',
-      eventData: { city, country, startDate, endDate }
+      eventData: { city, state, neighborhood, country, startDate, endDate }
     });
 
     return NextResponse.json(scheduled);

@@ -220,8 +220,8 @@ export default function ComercialDashboardPage() {
     );
   }
 
-  const maxGrowthUsers = Math.max(...data.charts.dailyGrowth.map((d) => d.users), 1);
-  const maxGrowthSubs = Math.max(...data.charts.dailyGrowth.map((d) => d.subscribers), 1);
+  const maxGrowthUsers = Math.max(...(data?.charts?.dailyGrowth || []).map((d) => d?.users || 0), 1);
+  const maxGrowthSubs = Math.max(...(data?.charts?.dailyGrowth || []).map((d) => d?.subscribers || 0), 1);
 
   return (
     <div className="space-y-6">
@@ -259,10 +259,10 @@ export default function ComercialDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total de Usuários</p>
-                  <p className="text-3xl font-bold">{data.metrics.users.total}</p>
+                  <p className="text-3xl font-bold">{data?.metrics?.users?.total || 0}</p>
                   <p className="text-sm text-green-500 flex items-center gap-1 mt-1">
                     <ArrowUpRight className="h-3 w-3" />
-                    +{data.metrics.users.newInPeriod} no período
+                    +{data?.metrics?.users?.newInPeriod || 0} no período
                   </p>
                 </div>
                 <div className="p-3 bg-blue-500/10 rounded-xl">
@@ -279,10 +279,10 @@ export default function ComercialDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Assinantes Ativos</p>
-                  <p className="text-3xl font-bold">{data.metrics.subscriptions.active}</p>
+                  <p className="text-3xl font-bold">{data?.metrics?.subscriptions?.active || 0}</p>
                   <p className="text-sm text-green-500 flex items-center gap-1 mt-1">
                     <ArrowUpRight className="h-3 w-3" />
-                    +{data.metrics.subscriptions.newInPeriod} novos
+                    +{data?.metrics?.subscriptions?.newInPeriod || 0} novos
                   </p>
                 </div>
                 <div className="p-3 bg-green-500/10 rounded-xl">
@@ -299,9 +299,9 @@ export default function ComercialDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Taxa de Conversão</p>
-                  <p className="text-3xl font-bold">{data.metrics.conversion.rate}%</p>
+                  <p className="text-3xl font-bold">{data?.metrics?.conversion?.rate || 0}%</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Ratio: {data.metrics.conversion.freeToPayingRatio}
+                    Ratio: {data?.metrics?.conversion?.freeToPayingRatio || "0:0"}
                   </p>
                 </div>
                 <div className="p-3 bg-purple-500/10 rounded-xl">
@@ -318,9 +318,9 @@ export default function ComercialDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Cancelamentos</p>
-                  <p className="text-3xl font-bold">{data.metrics.events.cancellations}</p>
+                  <p className="text-3xl font-bold">{data?.metrics?.events?.cancellations || 0}</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {data.metrics.subscriptions.canceled} totais
+                    {data?.metrics?.subscriptions?.canceled || 0} totais
                   </p>
                 </div>
                 <div className="p-3 bg-red-500/10 rounded-xl">
@@ -364,7 +364,7 @@ export default function ComercialDashboardPage() {
 
                 {/* Gráfico de barras simples */}
                 <div className="h-64 flex items-end gap-1">
-                  {data.charts.dailyGrowth.slice(-15).map((day, i) => {
+                  {(data?.charts?.dailyGrowth || []).slice(-15).map((day, i) => {
                     const usersHeight = (day.users / maxGrowthUsers) * 100;
                     const subsHeight = (day.subscribers / maxGrowthSubs) * 100;
                     const date = new Date(day.date);
@@ -393,11 +393,11 @@ export default function ComercialDashboardPage() {
                 {/* Resumo */}
                 <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-blue-500">{data.metrics.users.total}</p>
+                    <p className="text-2xl font-bold text-blue-500">{data?.metrics?.users?.total || 0}</p>
                     <p className="text-sm text-muted-foreground">Total de usuários</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-green-500">{data.metrics.users.premium}</p>
+                    <p className="text-2xl font-bold text-green-500">{data?.metrics?.users?.premium || 0}</p>
                     <p className="text-sm text-muted-foreground">Assinantes premium</p>
                   </div>
                 </div>
@@ -421,7 +421,7 @@ export default function ComercialDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {data.planDistribution.map((plan, i) => {
+                {(data?.planDistribution || []).map((plan, i) => {
                   const colors = [
                     "bg-gray-500",
                     "bg-primary",
@@ -442,7 +442,7 @@ export default function ComercialDashboardPage() {
                         </span>
                       </div>
                       <Progress
-                        value={parseFloat(plan.percentage)}
+                        value={parseFloat(plan.percentage || "0")}
                         className="h-2"
                       />
                     </div>
@@ -450,13 +450,13 @@ export default function ComercialDashboardPage() {
                 })}
 
                 {/* Plano mais popular */}
-                {data.planDistribution.length > 0 && (
+                {(data?.planDistribution || []).length > 0 && (
                   <div className="pt-4 border-t">
                     <p className="text-sm text-muted-foreground">Plano mais popular</p>
                     <p className="font-bold text-lg">
-                      {data.planDistribution.reduce((a, b) =>
-                        a.userCount > b.userCount ? a : b
-                      ).name}
+                      {data?.planDistribution?.reduce((a, b) =>
+                        (a?.userCount || 0) > (b?.userCount || 0) ? a : b
+                      )?.name || "Nenhum"}
                     </p>
                   </div>
                 )}

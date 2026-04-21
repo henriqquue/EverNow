@@ -59,8 +59,11 @@ export interface PublicProfileData {
   statusMood: string | null;
   gender: string | null;
   lookingFor: string | null;
+  relationshipStatus: string | null;
   city: string | null;
   state: string | null;
+  neighborhood: string | null;
+  country: string | null;
   photos: string[];
   interests: string[];
   languages: string[];
@@ -256,8 +259,10 @@ export async function resolvePublicProfile(
       birthDate: true,
       gender: true,
       lookingFor: true,
+      relationshipStatus: true,
       city: true,
       state: true,
+      neighborhood: true,
       country: true,
       photos: true,
       interests: true,
@@ -293,7 +298,16 @@ export async function resolvePublicProfile(
         where: { startDate: { lte: new Date() }, endDate: { gte: new Date() } },
         take: 1
       },
-      passportSetting: true,
+      passportSetting: {
+        select: {
+          isActive: true,
+          city: true,
+          state: true,
+          neighborhood: true,
+          country: true,
+          isAppearing: true,
+        }
+      },
     },
   });
   
@@ -304,18 +318,19 @@ export async function resolvePublicProfile(
     // Check scheduled passport first
     if (user.scheduledPassports.length > 0) {
       const scheduled = user.scheduledPassports[0];
-      return { city: scheduled.city, state: scheduled.state, country: scheduled.country };
+      return { city: scheduled.city, state: scheduled.state, neighborhood: scheduled.neighborhood, country: scheduled.country };
     }
     // Check active passport
     if (user.passportSetting?.isActive && (isOwnProfile || user.passportSetting.isAppearing)) {
       return {
         city: user.passportSetting.city,
         state: user.passportSetting.state,
+        neighborhood: user.passportSetting.neighborhood,
         country: user.passportSetting.country
       };
     }
     // Real location
-    return { city: user.city, state: user.state, country: user.country };
+    return { city: user.city, state: user.state, neighborhood: user.neighborhood, country: user.country };
   };
 
   const effectiveLoc = getEffectiveLocation();
@@ -334,8 +349,11 @@ export async function resolvePublicProfile(
       statusMood: user.statusMood,
       gender: user.gender,
       lookingFor: user.lookingFor,
+      relationshipStatus: user.relationshipStatus,
       city: effectiveLoc.city,
       state: effectiveLoc.state,
+      neighborhood: effectiveLoc.neighborhood,
+      country: effectiveLoc.country,
       photos: (() => {
         const photos = user.userPhotos.length > 0 
           ? (() => {
@@ -414,8 +432,11 @@ export async function resolvePublicProfile(
     statusMood: isFieldPublic('statusMood') ? user.statusMood : null,
     gender: user.gender, // Gender always shown for matching
     lookingFor: user.lookingFor,
+    relationshipStatus: isFieldPublic('relationshipStatus') ? user.relationshipStatus : null,
     city: isFieldPublic('city') ? effectiveLoc.city : null,
     state: isFieldPublic('state') ? effectiveLoc.state : null,
+    neighborhood: isFieldPublic('neighborhood') ? effectiveLoc.neighborhood : null,
+    country: isFieldPublic('country') ? effectiveLoc.country : null,
     photos: (() => {
       const photos = user.userPhotos.length > 0 
         ? (() => {
@@ -500,7 +521,10 @@ export async function calculateProfileQuality(userId: string): Promise<number> {
       statusMood: true,
       birthDate: true,
       gender: true,
+      relationshipStatus: true,
       city: true,
+      state: true,
+      neighborhood: true,
       work: true,
       education: true,
       interests: true,
@@ -524,7 +548,10 @@ export async function calculateProfileQuality(userId: string): Promise<number> {
     'statusMood': !!user.statusMood,
     'birthDate': !!user.birthDate,
     'gender': !!user.gender,
+    'relationshipStatus': !!user.relationshipStatus,
     'city': !!user.city,
+    'state': !!user.state,
+    'neighborhood': !!user.neighborhood,
     'work': !!user.work,
     'education': !!user.education,
     'interests': user.interests.length > 0,

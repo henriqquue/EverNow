@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json();
-    const { isActive, city, state, country, latitude, longitude, isExploring, isAppearing } = data;
+    const { isActive, city, state, neighborhood, country, latitude, longitude, isExploring, isAppearing } = data;
 
     const settings = await prisma.passportSetting.upsert({
       where: { userId: session.user.id },
@@ -43,6 +43,7 @@ export async function POST(request: Request) {
         isActive: isActive ?? false,
         city,
         state,
+        neighborhood,
         country,
         latitude,
         longitude,
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
         isActive: isActive ?? false,
         city,
         state,
+        neighborhood,
         country,
         latitude,
         longitude,
@@ -67,7 +69,7 @@ export async function POST(request: Request) {
       await trackEvent({
         userId: session.user.id,
         eventType: 'passport_activated',
-        eventData: { city, country, isExploring, isAppearing }
+        eventData: { city, state, neighborhood, country, isExploring, isAppearing }
       });
     }
 

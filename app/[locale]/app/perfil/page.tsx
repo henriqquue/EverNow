@@ -101,11 +101,13 @@ export default function PerfilPage() {
     education: "",
     city: "",
     state: "",
+    neighborhood: "",
     country: "",
     languages: [] as string[],
     birthDate: "",
     gender: "",
-    lookingFor: ""
+    lookingFor: "",
+    relationshipStatus: ""
   });
 
   useEffect(() => {
@@ -123,11 +125,13 @@ export default function PerfilPage() {
             education: p.education || "",
             city: p.city || "",
             state: p.state || "",
+            neighborhood: p.neighborhood || "",
             country: p.country || "",
             languages: Array.isArray(p.languages) ? p.languages : [],
             birthDate: p.birthDate ? new Date(p.birthDate).toISOString().split('T')[0] : "",
             gender: p.gender || "",
-            lookingFor: p.lookingFor || ""
+            lookingFor: p.lookingFor || "",
+            relationshipStatus: p.relationshipStatus || ""
           });
         }
       } finally {
@@ -326,7 +330,7 @@ export default function PerfilPage() {
     if (!formData.bio || formData.bio.trim() === '') {
       suggestions.push({ id: 'bio', text: t('suggestion_bio'), action: t('action_write_bio') });
     }
-    if (!formData.city || !formData.state) {
+    if (!formData.city || !formData.state || !formData.neighborhood) {
       suggestions.push({ id: 'location', text: t('suggestion_location'), action: t('action_add_location') });
     }
     if (!formData.work || formData.work.trim() === '') {
@@ -571,6 +575,11 @@ export default function PerfilPage() {
                 <option value="">{t('select')}</option>
                 <option value="MALE">{t('gender_male')}</option>
                 <option value="FEMALE">{t('gender_female')}</option>
+                <option value="NON_BINARY">{t('gender_non_binary')}</option>
+                <option value="TRANS_MALE">{t('gender_trans_male')}</option>
+                <option value="TRANS_FEMALE">{t('gender_trans_female')}</option>
+                <option value="GENDER_FLUID">{t('gender_gender_fluid')}</option>
+                <option value="AGENDER">{t('gender_agender')}</option>
                 <option value="OTHER">{t('gender_other')}</option>
                 <option value="PREFER_NOT_SAY">{t('gender_prefer_not_say')}</option>
               </select>
@@ -587,6 +596,23 @@ export default function PerfilPage() {
                 <option value="CASUAL">{t('looking_casual')}</option>
                 <option value="FRIENDSHIP">{t('looking_friendship')}</option>
                 <option value="OPEN">{t('looking_open')}</option>
+              </select>
+            </div>
+            <div className="space-y-1.5" id="section-relationshipStatus">
+              <label className="text-xs font-medium text-gray-500">{t('relationship_status')}</label>
+              <select
+                className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600"
+                value={formData.relationshipStatus}
+                onChange={e => setFormData({ ...formData, relationshipStatus: e.target.value })}
+              >
+                <option value="">{t('select')}</option>
+                <option value="SINGLE">{t('status_SINGLE')}</option>
+                <option value="DATING">{t('status_DATING')}</option>
+                <option value="MARRIED">{t('status_MARRIED')}</option>
+                <option value="DIVORCED">{t('status_DIVORCED')}</option>
+                <option value="WIDOWED">{t('status_WIDOWED')}</option>
+                <option value="SEPARATED">{t('status_SEPARATED')}</option>
+                <option value="OPEN_RELATIONSHIP">{t('status_OPEN_RELATIONSHIP')}</option>
               </select>
             </div>
           </div>
@@ -689,19 +715,35 @@ export default function PerfilPage() {
         <CardContent className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-500">{t('city_placeholder')}</label>
+              <label className="text-xs font-medium text-gray-500">País</label>
               <Input
-                placeholder={t('city_placeholder')}
+                placeholder="Ex: Brasil"
+                value={formData.country}
+                onChange={e => setFormData({ ...formData, country: e.target.value })}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-gray-500">Estado</label>
+              <Input
+                placeholder="Ex: Rio de Janeiro"
+                value={formData.state}
+                onChange={e => setFormData({ ...formData, state: e.target.value })}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-gray-500">Cidade</label>
+              <Input
+                placeholder="Ex: Rio de Janeiro"
                 value={formData.city}
                 onChange={e => setFormData({ ...formData, city: e.target.value })}
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-500">{t('country')}</label>
+              <label className="text-xs font-medium text-gray-500">Bairro</label>
               <Input
-                placeholder={t('country_placeholder')}
-                value={formData.country}
-                onChange={e => setFormData({ ...formData, country: e.target.value })}
+                placeholder="Ex: Copacabana"
+                value={formData.neighborhood}
+                onChange={e => setFormData({ ...formData, neighborhood: e.target.value })}
               />
             </div>
           </div>

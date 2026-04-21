@@ -16,6 +16,7 @@ import { ProfileCard } from '@/components/discovery/profile-card';
 import { FilterPanel } from '@/components/discovery/filter-panel';
 import { ReportModal } from '@/components/discovery/report-modal';
 import { MatchModal } from '@/components/discovery/match-modal';
+import { GoogleAd } from '@/components/google-ad';
 import { toast } from 'sonner';
 
 interface ExplanationLabel {
@@ -35,8 +36,11 @@ interface Profile {
     bio?: string;
     city?: string;
     state?: string;
+    neighborhood?: string;
+    country?: string;
     gender?: string;
     lookingFor?: string;
+    relationshipStatus?: string;
     photos: Array<{ url: string; isMain?: boolean; isVerified?: boolean }>;
     interests?: string[];
     profileComplete?: number;
@@ -434,6 +438,9 @@ export default function DescobertaPage() {
             {currentIndex + 1} {common('of')} {profiles.length} {common('profiles')}
           </div>
         )}
+
+        {/* Google Ad Slot */}
+        <GoogleAd slot="discovery_footer" className="mt-8" />
 
         {/* Premium upsell */}
         {!isPremium && (

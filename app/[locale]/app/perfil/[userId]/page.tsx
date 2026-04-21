@@ -29,12 +29,15 @@ interface ProfileData {
   statusMood: string | null;
   gender: string | null;
   lookingFor: string | null;
+  relationshipStatus: string | null;
   city: string | null;
   state: string | null;
+  neighborhood: string | null;
   photos: string[];
   interests: string[];
   languages: string[];
   work: string | null;
+  country: string | null;
   education: string | null;
   profileQuality: number;
   profileByCategory: Record<string, { name: string; values: string[] }>;
@@ -221,11 +224,30 @@ export default function ViewProfilePage() {
               )}
             </div>
 
+            {/* Details */}
+            <div className="flex flex-wrap gap-2">
+              {profile.gender && (
+                <Badge variant="outline" className="bg-indigo-50/50 border-indigo-100 text-indigo-700">
+                  {t(`gender_${profile.gender.toLowerCase()}`)}
+                </Badge>
+              )}
+              {profile.lookingFor && (
+                <Badge variant="outline" className="bg-pink-50/50 border-pink-100 text-pink-700">
+                  {t(`looking_${profile.lookingFor.toLowerCase()}`)}
+                </Badge>
+              )}
+              {profile.relationshipStatus && (
+                <Badge variant="outline" className="bg-blue-50/50 border-blue-100 text-blue-700">
+                  {t(`status_${profile.relationshipStatus}`)}
+                </Badge>
+              )}
+            </div>
+
             {/* Location */}
-            {(profile.city || profile.state) && (
+            {(profile.city || profile.state || profile.neighborhood) && (
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <MapPin className="w-4 h-4" />
-                {[profile.city, profile.state].filter(Boolean).join(', ')}
+                {[profile.country, profile.state, profile.city, profile.neighborhood].filter(Boolean).join(', ')}
               </div>
             )}
 

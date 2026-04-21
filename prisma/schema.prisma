@@ -35,8 +35,10 @@ model User {
   gender                  Gender?
   orientation             String?
   lookingFor              LookingFor?
+  relationshipStatus      RelationshipStatus?
   city                    String?
   state                   String?
+  neighborhood            String?
   country                 String?
   latitude                Float?
   longitude               Float?
@@ -608,6 +610,8 @@ model DiscoveryPreference {
   habits           String[] @default([])
   pets             String[] @default([])
   cities           String[] @default([])
+  states           String[] @default([])
+  neighborhoods    String[] @default([])
   countries        String[] @default([])
   invisibleMode    Boolean  @default(false)
   createdAt        DateTime @default(now())
@@ -744,6 +748,7 @@ model PassportSetting {
   isActive    Boolean  @default(false)
   city        String?
   state       String?
+  neighborhood String?
   country     String?
   latitude    Float?
   longitude   Float?
@@ -759,6 +764,7 @@ model ScheduledPassport {
   userId           String
   city             String
   state            String?
+  neighborhood     String?
   country          String
   latitude         Float?
   longitude        Float?
@@ -1311,6 +1317,11 @@ enum ContentType {
 enum Gender {
   MALE
   FEMALE
+  NON_BINARY
+  TRANS_MALE
+  TRANS_FEMALE
+  GENDER_FLUID
+  AGENDER
   OTHER
   PREFER_NOT_SAY
 }
@@ -1320,6 +1331,16 @@ enum LookingFor {
   CASUAL
   FRIENDSHIP
   OPEN
+}
+
+enum RelationshipStatus {
+  SINGLE
+  DATING
+  MARRIED
+  DIVORCED
+  WIDOWED
+  SEPARATED
+  OPEN_RELATIONSHIP
 }
 
 enum ImportanceLevel {

@@ -51,6 +51,11 @@ export const FILTER_CATEGORIES = {
     icon: 'Calendar',
     filters: ['meetingType']
   },
+  location: {
+    name: 'Localização',
+    icon: 'MapPin',
+    filters: ['neighborhoods', 'states', 'cities', 'countries']
+  },
   advanced: {
     name: 'Avançados',
     icon: 'Settings',
@@ -61,6 +66,11 @@ export const FILTER_CATEGORIES = {
 export const GENDER_OPTIONS = [
   { value: 'MALE', label: 'Homem' },
   { value: 'FEMALE', label: 'Mulher' },
+  { value: 'NON_BINARY', label: 'Não-binário' },
+  { value: 'TRANS_MALE', label: 'Homem Trans' },
+  { value: 'TRANS_FEMALE', label: 'Mulher Trans' },
+  { value: 'GENDER_FLUID', label: 'Gênero Fluido' },
+  { value: 'AGENDER', label: 'Agênero' },
   { value: 'OTHER', label: 'Outro' }
 ];
 
@@ -78,6 +88,16 @@ export const INTENTION_OPTIONS = [
   { value: 'CASUAL', label: 'Algo casual' },
   { value: 'FRIENDSHIP', label: 'Amizade' },
   { value: 'OPEN', label: 'Aberto a possibilidades' }
+];
+
+export const RELATIONSHIP_STATUS_OPTIONS = [
+  { value: 'SINGLE', label: 'Solteiro(a)' },
+  { value: 'DATING', label: 'Em um relacionamento' },
+  { value: 'MARRIED', label: 'Casado(a)' },
+  { value: 'DIVORCED', label: 'Divorciado(a)' },
+  { value: 'WIDOWED', label: 'Viúvo(a)' },
+  { value: 'SEPARATED', label: 'Separado(a)' },
+  { value: 'OPEN_RELATIONSHIP', label: 'Relacionamento Aberto' }
 ];
 
 export const BODY_TYPE_OPTIONS = [

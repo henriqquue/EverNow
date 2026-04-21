@@ -14,6 +14,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Loading } from '@/components/ui/loading';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { cn } from '@/lib/utils';
 import {
   PASSPORT_START_MODE_OPTIONS,
@@ -25,6 +32,7 @@ interface PassportSetting {
   isActive: boolean;
   city: string | null;
   state: string | null;
+  neighborhood: string | null;
   country: string | null;
   isExploring: boolean;
   isAppearing: boolean;
@@ -34,6 +42,7 @@ interface ScheduledPassport {
   id: string;
   city: string;
   state: string | null;
+  neighborhood: string | null;
   country: string;
   startDate: string;
   endDate: string;
@@ -55,6 +64,8 @@ export default function PassaportePage() {
   // Current passport
   const [currentPassport, setCurrentPassport] = useState<PassportSetting | null>(null);
   const [passportCity, setPassportCity] = useState('');
+  const [passportState, setPassportState] = useState('');
+  const [passportNeighborhood, setPassportNeighborhood] = useState('');
   const [passportCountry, setPassportCountry] = useState('');
   const [isExploring, setIsExploring] = useState(true);
   const [isAppearing, setIsAppearing] = useState(false);
@@ -64,6 +75,8 @@ export default function PassaportePage() {
   const [showAddScheduled, setShowAddScheduled] = useState(false);
   const [newScheduled, setNewScheduled] = useState({
     city: '',
+    state: '',
+    neighborhood: '',
     country: '',
     startDate: '',
     endDate: '',
@@ -104,6 +117,8 @@ export default function PassaportePage() {
       if (passportData.id) {
         setCurrentPassport(passportData);
         setPassportCity(passportData.city || '');
+        setPassportState(passportData.state || '');
+        setPassportNeighborhood(passportData.neighborhood || '');
         setPassportCountry(passportData.country || '');
         setIsExploring(passportData.isExploring);
         setIsAppearing(passportData.isAppearing);
@@ -140,6 +155,8 @@ export default function PassaportePage() {
         body: JSON.stringify({
           isActive: activate,
           city: passportCity,
+          state: passportState,
+          neighborhood: passportNeighborhood,
           country: passportCountry,
           isExploring,
           isAppearing
@@ -187,6 +204,8 @@ export default function PassaportePage() {
       setShowAddScheduled(false);
       setNewScheduled({
         city: '',
+        state: '',
+        neighborhood: '',
         country: '',
         startDate: '',
         endDate: '',
@@ -292,11 +311,37 @@ export default function PassaportePage() {
             <CardContent className="space-y-6 pt-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-muted-foreground px-1">{t('city_label')}</label>
+                  <label className="text-xs font-bold text-muted-foreground px-1">País</label>
+                  <div className="relative group">
+                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-indigo-500 transition-colors" />
+                    <Input
+                      placeholder="Ex: Brasil"
+                      value={passportCountry}
+                      onChange={e => setPassportCountry(e.target.value)}
+                      disabled={!isPremium}
+                      className="pl-11 h-12 bg-white/50 dark:bg-black/20 border-white/20 dark:border-white/10 rounded-2xl focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-muted-foreground px-1">Estado</label>
+                  <div className="relative group">
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-indigo-500 transition-colors" />
+                    <Input
+                      placeholder="Ex: Rio de Janeiro"
+                      value={passportState}
+                      onChange={e => setPassportState(e.target.value)}
+                      disabled={!isPremium}
+                      className="pl-11 h-12 bg-white/50 dark:bg-black/20 border-white/20 dark:border-white/10 rounded-2xl focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-muted-foreground px-1">Cidade</label>
                   <div className="relative group">
                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-purple-600 transition-colors" />
                     <Input
-                      placeholder={tProfile('city_placeholder')}
+                      placeholder="Ex: Rio de Janeiro"
                       value={passportCity}
                       onChange={e => setPassportCity(e.target.value)}
                       disabled={!isPremium}
@@ -305,15 +350,15 @@ export default function PassaportePage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-muted-foreground px-1">{t('country_label')}</label>
+                  <label className="text-xs font-bold text-muted-foreground px-1">Bairro</label>
                   <div className="relative group">
-                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-indigo-500 transition-colors" />
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-purple-600 transition-colors" />
                     <Input
-                      placeholder={tProfile('country_placeholder')}
-                      value={passportCountry}
-                      onChange={e => setPassportCountry(e.target.value)}
+                      placeholder="Ex: Copacabana"
+                      value={passportNeighborhood}
+                      onChange={e => setPassportNeighborhood(e.target.value)}
                       disabled={!isPremium}
-                      className="pl-11 h-12 bg-white/50 dark:bg-black/20 border-white/20 dark:border-white/10 rounded-2xl focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all"
+                      className="pl-11 h-12 bg-white/50 dark:bg-black/20 border-white/20 dark:border-white/10 rounded-2xl focus:ring-purple-500/20 focus:border-purple-500/50 transition-all"
                     />
                   </div>
                 </div>
@@ -461,94 +506,98 @@ export default function PassaportePage() {
           </div>
         </section>
 
-        {/* Add scheduled modal - Premium Sheet/Modal Design */}
-        <AnimatePresence>
-          {showAddScheduled && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/60 backdrop-blur-md z-[100]"
-                onClick={() => setShowAddScheduled(false)}
-              />
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="fixed inset-x-4 bottom-8 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-w-lg sm:w-full bg-background border border-white/20 dark:border-white/10 rounded-[40px] shadow-2xl z-[101] overflow-hidden"
-              >
-                <div className="p-8 space-y-8">
-                  <div className="space-y-1">
-                    <h3 className="text-2xl font-black tracking-tight">{t('schedule_modal_title')}</h3>
-                    <p className="text-sm text-muted-foreground">{t('schedule_modal_desc')}</p>
+        {/* Add scheduled modal - Using standard Dialog for perfect portaling and blur */}
+        <Dialog open={showAddScheduled} onOpenChange={setShowAddScheduled}>
+          <DialogContent className="sm:max-w-lg p-0 bg-transparent border-none shadow-none">
+            <div className="bg-background border border-white/20 dark:border-white/10 rounded-[40px] shadow-2xl overflow-hidden">
+              <div className="p-8 space-y-8">
+                <div className="space-y-1">
+                  <h3 className="text-2xl font-black tracking-tight">{t('schedule_modal_title')}</h3>
+                  <p className="text-sm text-muted-foreground">{t('schedule_modal_desc')}</p>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-muted-foreground px-1">País</label>
+                      <Input
+                        placeholder="Ex: Brasil"
+                        value={newScheduled.country}
+                        onChange={e => setNewScheduled({ ...newScheduled, country: e.target.value })}
+                        className="h-12 rounded-2xl bg-muted/50 border-transparent focus:bg-background"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-muted-foreground px-1">Estado</label>
+                      <Input
+                        placeholder="Ex: Rio de Janeiro"
+                        value={newScheduled.state}
+                        onChange={e => setNewScheduled({ ...newScheduled, state: e.target.value })}
+                        className="h-12 rounded-2xl bg-muted/50 border-transparent focus:bg-background"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-muted-foreground px-1">Cidade</label>
+                      <Input
+                        placeholder="Ex: Rio de Janeiro"
+                        value={newScheduled.city}
+                        onChange={e => setNewScheduled({ ...newScheduled, city: e.target.value })}
+                        className="h-12 rounded-2xl bg-muted/50 border-transparent focus:bg-background"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-muted-foreground px-1">Bairro</label>
+                      <Input
+                        placeholder="Ex: Copacabana"
+                        value={newScheduled.neighborhood}
+                        onChange={e => setNewScheduled({ ...newScheduled, neighborhood: e.target.value })}
+                        className="h-12 rounded-2xl bg-muted/50 border-transparent focus:bg-background"
+                      />
+                    </div>
                   </div>
 
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold text-muted-foreground px-1">{t('city_label')}</label>
-                        <Input
-                          placeholder={tProfile('city_placeholder')}
-                          value={newScheduled.city}
-                          onChange={e => setNewScheduled({ ...newScheduled, city: e.target.value })}
-                          className="h-12 rounded-2xl bg-muted/50 border-transparent focus:bg-background"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold text-muted-foreground px-1">{t('country_label')}</label>
-                        <Input
-                          placeholder={tProfile('country_placeholder')}
-                          value={newScheduled.country}
-                          onChange={e => setNewScheduled({ ...newScheduled, country: e.target.value })}
-                          className="h-12 rounded-2xl bg-muted/50 border-transparent focus:bg-background"
-                        />
-                      </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-muted-foreground px-1">{t('start_date')}</label>
+                      <Input
+                        type="date"
+                        value={newScheduled.startDate}
+                        onChange={e => setNewScheduled({ ...newScheduled, startDate: e.target.value })}
+                        className="h-12 rounded-2xl bg-muted/50 border-transparent focus:bg-background"
+                      />
                     </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-muted-foreground px-1">{t('end_date')}</label>
+                      <Input
+                        type="date"
+                        value={newScheduled.endDate}
+                        onChange={e => setNewScheduled({ ...newScheduled, endDate: e.target.value })}
+                        className="h-12 rounded-2xl bg-muted/50 border-transparent focus:bg-background"
+                      />
+                    </div>
+                  </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold text-muted-foreground px-1">{t('start_date')}</label>
-                        <Input
-                          type="date"
-                          value={newScheduled.startDate}
-                          onChange={e => setNewScheduled({ ...newScheduled, startDate: e.target.value })}
-                          className="h-12 rounded-2xl bg-muted/50 border-transparent focus:bg-background"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold text-muted-foreground px-1">{t('end_date')}</label>
-                        <Input
-                          type="date"
-                          value={newScheduled.endDate}
-                          onChange={e => setNewScheduled({ ...newScheduled, endDate: e.target.value })}
-                          className="h-12 rounded-2xl bg-muted/50 border-transparent focus:bg-background"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex gap-4 pt-4">
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowAddScheduled(false)}
-                        className="flex-1 h-12 rounded-2xl font-bold border-transparent bg-muted hover:bg-muted/80"
-                      >
-                        {t('cancel')}
-                      </Button>
-                      <Button
-                        onClick={handleAddScheduled}
-                        disabled={saving || !newScheduled.city || !newScheduled.country || !newScheduled.startDate || !newScheduled.endDate}
-                        className="flex-2 h-12 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold px-8 shadow-lg shadow-purple-600/20"
-                      >
-                        {saving ? t('scheduling') : t('confirm_schedule')}
-                      </Button>
-                    </div>
+                  <div className="flex gap-4 pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowAddScheduled(false)}
+                      className="flex-1 h-12 rounded-2xl font-bold border-transparent bg-muted hover:bg-muted/80"
+                    >
+                      {t('cancel')}
+                    </Button>
+                    <Button
+                      onClick={handleAddScheduled}
+                      disabled={saving || !newScheduled.city || !newScheduled.country || !newScheduled.startDate || !newScheduled.endDate}
+                      className="flex-2 h-12 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold px-8 shadow-lg shadow-purple-600/20"
+                    >
+                      {saving ? t('scheduling') : t('confirm_schedule')}
+                    </Button>
                   </div>
                 </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

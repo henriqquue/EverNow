@@ -39,11 +39,14 @@ export interface DiscoveryFilters {
   habits?: string[];
   pets?: string[];
   cities?: string[];
+  states?: string[];
+  neighborhoods?: string[];
   countries?: string[];
   education?: string[];
   professions?: string[];
   passportCity?: string;
   meetingMode?: boolean;
+  relationshipStatuses?: string[];
 }
 
 export interface DiscoveryResult {
@@ -107,6 +110,7 @@ export async function getEffectiveLocation(userId: string) {
     select: {
       city: true,
       state: true,
+      neighborhood: true,
       country: true,
       latitude: true,
       longitude: true,
@@ -131,6 +135,7 @@ export async function getEffectiveLocation(userId: string) {
     return {
       city: scheduled.city,
       state: scheduled.state,
+      neighborhood: scheduled.neighborhood,
       country: scheduled.country,
       latitude: scheduled.latitude,
       longitude: scheduled.longitude,
@@ -143,6 +148,7 @@ export async function getEffectiveLocation(userId: string) {
     return {
       city: user.passportSetting.city,
       state: user.passportSetting.state,
+      neighborhood: user.passportSetting.neighborhood,
       country: user.passportSetting.country,
       latitude: user.passportSetting.latitude,
       longitude: user.passportSetting.longitude,
@@ -154,6 +160,7 @@ export async function getEffectiveLocation(userId: string) {
   return {
     city: user.city,
     state: user.state,
+    neighborhood: user.neighborhood,
     country: user.country,
     latitude: user.latitude,
     longitude: user.longitude,
@@ -249,21 +256,59 @@ export async function discoverProfiles(
     baseWhere.lookingFor = { in: filters.intentions };
   }
 
+  // Relationship status filter
+  if (filters.relationshipStatuses && filters.relationshipStatuses.length > 0) {
+    baseWhere.relationshipStatus = { in: filters.relationshipStatuses };
+  }
+
   // Photos filter
   if (filters.withPhotos) {
     baseWhere.userPhotos = { some: {} };
   }
 
   // Location filters - Enhanced for Passport support
+  const searchNeighborhoods = filters.neighborhoods && filters.neighborhoods.length > 0
+    ? filters.neighborhoods
+    : (userLocation?.isPassport ? [userLocation.neighborhood] : undefined);
+
   const searchCities = filters.cities && filters.cities.length > 0 
     ? filters.cities 
     : (userLocation?.isPassport ? [userLocation.city] : undefined);
     
+  const searchStates = filters.states && filters.states.length > 0
+    ? filters.states
+    : (userLocation?.isPassport ? [userLocation.state] : undefined);
+
   const searchCountries = filters.countries && filters.countries.length > 0
     ? filters.countries
     : (userLocation?.isPassport ? [userLocation.country] : undefined);
 
-  if (searchCities && searchCities.length > 0) {
+  if (searchNeighborhoods && searchNeighborhoods.length > 0) {
+    const locationCondition = {
+      OR: [
+        { neighborhood: { in: searchNeighborhoods } },
+        {
+          passportSetting: {
+            isActive: true,
+            isAppearing: true,
+            neighborhood: { in: searchNeighborhoods }
+          }
+        },
+        {
+          scheduledPassports: {
+            some: {
+              isActive: true,
+              startDate: { lte: new Date() },
+              endDate: { gte: new Date() },
+              neighborhood: { in: searchNeighborhoods }
+            }
+          }
+        }
+      ]
+    };
+    if (!baseWhere.AND) baseWhere.AND = [];
+    baseWhere.AND.push(locationCondition);
+  } else if (searchCities && searchCities.length > 0) {
     const locationCondition = {
       OR: [
         { city: { in: searchCities } },
@@ -286,11 +331,23 @@ export async function discoverProfiles(
         }
       ]
     };
-    
-    // Combine with existing filters using AND to avoid overwriting top-level OR
     if (!baseWhere.AND) baseWhere.AND = [];
     baseWhere.AND.push(locationCondition);
-
+  } else if (searchStates && searchStates.length > 0) {
+    const locationCondition = {
+      OR: [
+        { state: { in: searchStates } },
+        {
+          passportSetting: {
+            isActive: true,
+            isAppearing: true,
+            state: { in: searchStates }
+          }
+        }
+      ]
+    };
+    if (!baseWhere.AND) baseWhere.AND = [];
+    baseWhere.AND.push(locationCondition);
   } else if (searchCountries && searchCountries.length > 0) {
     const locationCondition = {
       OR: [
@@ -304,7 +361,6 @@ export async function discoverProfiles(
         }
       ]
     };
-    
     if (!baseWhere.AND) baseWhere.AND = [];
     baseWhere.AND.push(locationCondition);
   }
@@ -546,9 +602,11 @@ export async function discoverProfiles(
         bio: profile.bio,
         city: profile.city,
         state: profile.state,
+        neighborhood: profile.neighborhood,
         country: profile.country,
         gender: profile.gender,
         lookingFor: profile.lookingFor,
+        relationshipStatus: profile.relationshipStatus,
         photos: profile.userPhotos.map(p => ({ url: p.url, isMain: p.isMain, isVerified: p.isVerified })),
         interests: profile.interests,
         profileComplete: profile.profileComplete,

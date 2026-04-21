@@ -12,8 +12,11 @@ const FIELD_TO_USER_KEY: Record<string, string> = {
   name: 'name',
   bio: 'bio',
   city: 'city',
+  state: 'state',
+  neighborhood: 'neighborhood',
   gender: 'gender',
   lookingFor: 'lookingFor',
+  relationshipStatus: 'relationshipStatus',
   interests: 'interests',
   photos: 'photos',
   birthDate: 'age', // age is derived from birthDate
@@ -55,8 +58,11 @@ export async function GET(request: Request) {
       habits: searchParams.get('habits')?.split(',').filter(Boolean) || undefined,
       pets: searchParams.get('pets')?.split(',').filter(Boolean) || undefined,
       cities: searchParams.get('cities')?.split(',').filter(Boolean) || undefined,
+      states: searchParams.get('states')?.split(',').filter(Boolean) || undefined,
+      neighborhoods: searchParams.get('neighborhoods')?.split(',').filter(Boolean) || undefined,
       countries: searchParams.get('countries')?.split(',').filter(Boolean) || undefined,
-      meetingMode: searchParams.get('meetingMode') === 'true'
+      meetingMode: searchParams.get('meetingMode') === 'true',
+      relationshipStatuses: searchParams.get('relationshipStatuses')?.split(',').filter(Boolean) || undefined,
     };
 
     const result = await discoverProfiles(session.user.id, filters, page, limit, safeMode);

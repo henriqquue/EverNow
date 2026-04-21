@@ -29,8 +29,11 @@ interface ProfileCardProps {
       bio?: string;
       city?: string;
       state?: string;
+      neighborhood?: string;
+      country?: string;
       gender?: string;
       lookingFor?: string;
+      relationshipStatus?: string;
       photos: Array<{ url: string; isMain?: boolean; isVerified?: boolean }>;
       interests?: string[];
       profileComplete?: number;
@@ -116,6 +119,12 @@ export function ProfileCard({
       case 'OPEN': return t('open_to_possibilities');
       default: return null;
     }
+  };
+
+  const getRelationshipStatusLabel = (status?: string) => {
+    if (!status) return null;
+    const key = `status_${status}`;
+    return t.has(key as any) ? t(key as any) : null;
   };
 
   return (
@@ -303,16 +312,22 @@ export function ProfileCard({
 
           {/* Primary Details: Location & Career */}
           <div className="space-y-1.5 mb-4">
-            {(profile.user.city || profile.user.state) && (
+            {(profile.user.city || profile.user.state || profile.user.neighborhood) && (
               <div className="flex items-center text-sm font-medium text-white/80">
                 <MapPin className="w-3.5 h-3.5 mr-1.5 text-purple-400" />
-                {[profile.user.city, profile.user.state].filter(Boolean).join(', ')}
+                {[profile.user.country, profile.user.state, profile.user.city, profile.user.neighborhood].filter(Boolean).join(', ')}
               </div>
             )}
             {profile.user.lookingFor && (
               <div className="flex items-center text-sm font-medium text-white/80">
                 <Heart className="w-3.5 h-3.5 mr-1.5 text-indigo-400" />
                 {getLookingForLabel(profile.user.lookingFor)}
+              </div>
+            )}
+            {profile.user.relationshipStatus && (
+              <div className="flex items-center text-sm font-medium text-white/80">
+                <Users className="w-3.5 h-3.5 mr-1.5 text-blue-400" />
+                {getRelationshipStatusLabel(profile.user.relationshipStatus)}
               </div>
             )}
           </div>

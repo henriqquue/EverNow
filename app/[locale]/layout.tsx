@@ -58,6 +58,13 @@ export default async function RootLayout({
     <html lang={locale} suppressHydrationWarning>
       <head>
         <script src="https://apps.abacus.ai/chatllm/appllm-lib.js" />
+        {process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID && (
+          <script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID}`}
+            crossOrigin="anonymous"
+          />
+        )}
       </head>
       <body className={inter.className}>
         <NextIntlClientProvider locale={locale} messages={messages}>

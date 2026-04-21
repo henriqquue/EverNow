@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, ChevronDown, ChevronUp, Filter, Save, RotateCcw,
   User, Heart, Eye, Baby, Church, Sparkles, Coffee, Music,
-  Dog, Calendar, Settings, Crown, Check, Sliders
+  Dog, Calendar, Settings, Crown, Check, Sliders, MapPin
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,7 @@ import {
   GENDER_OPTIONS,
   ORIENTATION_OPTIONS,
   INTENTION_OPTIONS,
+  RELATIONSHIP_STATUS_OPTIONS,
   BODY_TYPE_OPTIONS,
   CHILDREN_OPTIONS,
   RELIGION_OPTIONS,
@@ -38,7 +39,7 @@ interface FilterPanelProps {
 }
 
 const iconMap: Record<string, any> = {
-  User, Heart, Eye, Baby, Church, Sparkles, Coffee, Music, Dog, Calendar, Settings
+  User, Heart, Eye, Baby, Church, Sparkles, Coffee, Music, Dog, Calendar, Settings, MapPin
 };
 
 export function FilterPanel({
@@ -308,9 +309,15 @@ export function FilterPanel({
                             )}
 
                             {key === 'intention' && (
-                              <div>
-                                <label className="text-sm font-medium mb-2 block">{t('intention')}</label>
-                                {renderMultiSelect(INTENTION_OPTIONS, 'intentions')}
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="text-sm font-medium mb-2 block">{t('intention')}</label>
+                                  {renderMultiSelect(INTENTION_OPTIONS, 'intentions')}
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium mb-2 block">{t('relationship_status')}</label>
+                                  {renderMultiSelect(RELATIONSHIP_STATUS_OPTIONS, 'relationshipStatuses')}
+                                </div>
                               </div>
                             )}
 
@@ -373,6 +380,43 @@ export function FilterPanel({
                                 {renderMultiSelect(MEETING_TYPE_OPTIONS, 'meetingTypes')}
                               </div>
                             )}
+
+                              {key === 'location' && (
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="text-sm font-medium mb-2 block">País</label>
+                                    <Input 
+                                      placeholder="Ex: Brasil"
+                                      value={localFilters.countries || ''}
+                                      onChange={e => updateFilter('countries', e.target.value)}
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium mb-2 block">Estado</label>
+                                    <Input 
+                                      placeholder="Ex: Rio de Janeiro"
+                                      value={localFilters.states || ''}
+                                      onChange={e => updateFilter('states', e.target.value)}
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium mb-2 block">Cidade</label>
+                                    <Input 
+                                      placeholder="Ex: Rio de Janeiro"
+                                      value={localFilters.cities || ''}
+                                      onChange={e => updateFilter('cities', e.target.value)}
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium mb-2 block">Bairro</label>
+                                    <Input 
+                                      placeholder="Ex: Copacabana"
+                                      value={localFilters.neighborhoods || ''}
+                                      onChange={e => updateFilter('neighborhoods', e.target.value)}
+                                    />
+                                  </div>
+                                </div>
+                              )}
 
                             {key === 'advanced' && (
                               <>

@@ -64,6 +64,46 @@ export async function GET() {
       };
     });
 
+    // Fetch user growth (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const userGrowthRaw = await prisma.user.groupBy({
+      by: ['createdAt'],
+      where: {
+        createdAt: { gte: thirtyDaysAgo },
+        role: 'USER'
+      },
+      _count: true,
+      orderBy: { createdAt: 'asc' }
+    });
+
+    // Process growth data into daily buckets
+    const growthMap = new Map();
+    for (let i = 0; i < 30; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      growthMap.set(d.toISOString().split('T')[0], 0);
+    }
+    userGrowthRaw.forEach(u => {
+      const day = u.createdAt.toISOString().split('T')[0];
+      if (growthMap.has(day)) {
+        growthMap.set(day, (growthMap.get(day) || 0) + 1);
+      }
+    });
+    const userGrowth = Array.from(growthMap.entries())
+      .map(([date, count]) => ({ date, count }))
+      .reverse();
+
+    // Engagement: Matches and Likes (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const [likesCount, matchesCount] = await Promise.all([
+      prisma.like.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
+      prisma.match.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
+    ]);
+
     return NextResponse.json({
       totalUsers,
       activeSubscribers,
@@ -72,6 +112,11 @@ export async function GET() {
       monthlyRevenue,
       planDistribution,
       recentUpgrades,
+      userGrowth,
+      engagement: {
+        likes: likesCount,
+        matches: matchesCount
+      }
     });
   } catch (error: any) {
     console.error('SA dashboard error:', error);
