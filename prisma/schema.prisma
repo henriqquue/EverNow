@@ -108,10 +108,19 @@ model User {
   userPhotos              UserPhoto[]
   preferences             UserPreference[]
   profileAnswers          UserProfileAnswer[]
-  verificationRequests    VerificationRequest[]
+   verificationRequests    VerificationRequest[]
+   lgpdRequests           LGPDRequest[]           @relation("LGPDRequests")
+   lgpdRequestsApproved   LGPDRequest[]           @relation("LGPDRequestsApproved")
+   lgpdAuditLogs          LGPDAuditLog[]          @relation("LGPDAuditLogs")
+   userConsent            UserConsent?            @relation("UserConsents")
+   lgpdCompliance         LGPDCompliance?         @relation("LGPDCompliance")
+   purchases              Purchase[]              @relation("Purchases")
+   activeBoosts           ActiveBoost[]           @relation("ActiveBoosts")
+   userVerification       UserVerification?       @relation("UserVerifications")
+   verificationsApproved  UserVerification[]      @relation("VerificationsApproved")
 
-  @@index([email])
-  @@index([role])
+   @@index([email])
+   @@index([role])
   @@index([tenantId])
 }
 
@@ -1246,9 +1255,113 @@ model ModerationAction {
   moderator      User                 @relation("ModerationActionsByMod", fields: [moderatorId], references: [id], onDelete: Cascade)
   targetUser     User                 @relation("ModerationActionsOnUser", fields: [targetUserId], references: [id], onDelete: Cascade)
 
-  @@index([targetUserId])
-  @@index([moderatorId])
-  @@index([actionType])
+   @@index([targetUserId])
+   @@index([moderatorId])
+   @@index([actionType])
+   @@index([createdAt])
+}
+
+// ─── Consumíveis e Compras ───────────────────────────────────────────────────────────
+
+model ConsumableItem {
+  id                String             @id @default(cuid())
+  name              String             // "Boost de Perfil", "SuperLike", etc
+  slug              String             @unique
+  description       String?
+  type              ConsumableType     @default(BOOST)
+  price             Float              // Preço em reais
+  currency          String             @default("BRL")
+  quantity          Int?               // null = unlimited, numero = quantidade limitada
+  durationDays      Int?               // Por quanto tempo o boost fica ativo (null = one-time)
+  icon              String?            // Emoji ou nome do ícone
+  color             String?            // Cor para UI (hex)
+  benefits          Json?              // Benefícios do item: {"visibility_boost": 1.5, "priority_in_feed": true}
+  badge             String?            // Badge que aparece no perfil se verificado
+  visibility        Float              @default(1.0) // Multiplicador de visibilidade (1.0 = normal)
+  order             Int                @default(0)
+  status            ConsumableStatus   @default(ACTIVE)
+  isPopular         Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  purchases         Purchase[]
+  activeBoosts      ActiveBoost[]
+
+  @@index([slug])
+  @@index([status])
+}
+
+model Purchase {
+  id                String             @id @default(cuid())
+  userId            String
+  itemId            String
+  quantity          Int                @default(1)
+  amount            Float              // Valor pago
+  currency          String             @default("BRL")
+  status            PurchaseStatus     @default(COMPLETED)
+  paymentMethod     String?            // "card", "wallet", "credit"
+  transactionId     String?            // ID do gateway de pagamento
+  metadata          Json?              // Dados adicionais
+  createdAt         DateTime           @default(now())
+  expiresAt         DateTime?          // Quando o acesso expira (para itens com duração)
+  user              User               @relation("Purchases", fields: [userId], references: [id], onDelete: Cascade)
+  item              ConsumableItem     @relation(fields: [itemId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@index([itemId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ActiveBoost {
+  id                String             @id @default(cuid())
+  userId            String
+  itemId            String
+  purchaseId        String
+  isActive          Boolean            @default(true)
+  activatedAt       DateTime           @default(now())
+  expiresAt         DateTime
+  usageCount        Int                @default(0)
+  maxUsage          Int?               // null = unlimited
+  metadata          Json?              // Dados específicos da ativação
+  createdAt         DateTime           @default(now())
+  user              User               @relation("ActiveBoosts", fields: [userId], references: [id], onDelete: Cascade)
+  item              ConsumableItem     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([itemId])
+  @@index([isActive])
+  @@index([expiresAt])
+}
+
+// ─── Verificação de Identidade ───────────────────────────────────────────────────────────
+
+model UserVerification {
+  id                String             @id @default(cuid())
+  userId            String             @unique
+  isVerified        Boolean            @default(false)
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  photoUrl          String?            // Foto do rosto para verificação
+  documentUrl       String?            // Documento de identidade
+  documentType      DocumentType?
+  selfieUrl         String?            // Selfie com documento
+  approvedAt        DateTime?
+  approvedById      String?            // Admin que aprovou
+  rejectedAt        DateTime?
+  rejectionReason   String?
+  attempts          Int                @default(0)
+  maxAttempts       Int                @default(3)
+  lastAttemptAt     DateTime?
+  visibilityBoost   Float              @default(1.2) // +20% de visibilidade se verificado
+  trustScoreBoost   Float              @default(10) // +10 pontos no trust score
+  profileBadge      String?            // "verified" ou similares
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  approvedBy        User?              @relation("VerificationsApproved", fields: [approvedById], references: [id])
+  user              User               @relation("UserVerifications", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isVerified])
+  @@index([verificationStatus])
   @@index([createdAt])
 }
 
@@ -1529,4 +1642,166 @@ enum ModerationActionType {
   VERIFICATION_APPROVED
   VERIFICATION_REJECTED
   TRUST_SCORE_ADJUSTMENT
+}
+
+// ─── LGPD Models ───────────────────────────────────────────────────────────
+
+model LGPDRequest {
+  id              String            @id @default(cuid())
+  userId          String
+  requestType     LGPDRequestType
+  status          LGPDRequestStatus @default(PENDING)
+  reason          String?
+  data            Json?             // Dados exportados
+  approvedById    String?
+  approvedAt      DateTime?
+  completedAt     DateTime?
+  expiresAt       DateTime          // Link de download expira em 30 dias
+  downloadUrl     String?           // URL temporária de download
+  notes           String?           // Notas do admin
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  approvedBy      User?             @relation("LGPDRequestsApproved", fields: [approvedById], references: [id], onDelete: SetNull)
+  user            User              @relation("LGPDRequests", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([requestType])
+  @@index([createdAt])
+}
+
+model LGPDAuditLog {
+  id            String            @id @default(cuid())
+  userId        String
+  actionType    LGPDAuditAction
+  entityType    String            // "User", "Profile", "Chat", etc
+  entityId      String
+  description   String
+  oldValues     Json?             // Valores antigos (para rastrear mudanças)
+  newValues     Json?             // Valores novos
+  performedBy   String?           // Quem fez a ação (admin ou sistema)
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime          @default(now())
+  user          User              @relation("LGPDAuditLogs", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([actionType])
+  @@index([createdAt])
+  @@index([entityType])
+}
+
+model UserConsent {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  marketing  Boolean  @default(false)  // Consentimento para marketing
+  analytics  Boolean  @default(true)   // Consentimento para analytics
+  thirdParty Boolean  @default(false)  // Compartilhamento com terceiros
+  profilingConsent Boolean  @default(false)  // Consentimento para perfilagem
+  grantedAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  ipAddress  String?
+  userAgent  String?
+  user       User     @relation("UserConsents", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model LGPDCompliance {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  dataInventoryDate DateTime? // Última data que dados foram inventariados
+  retentionReviewed DateTime? // Última revisão de retenção
+  consentCurrent    Boolean  @default(true)  // Consentimento está atualizado?
+  lastAuditDate     DateTime?
+  complianceScore   Int      @default(100) // 0-100
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation("LGPDCompliance", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum LGPDRequestType {
+  DATA_EXPORT          // Direito de acesso - Exportar todos os dados
+  DATA_ANONYMIZATION   // Direito ao esquecimento - Anonimizar dados
+  DATA_DELETION        // Direito ao esquecimento - Deletar dados
+  DATA_RECTIFICATION   // Direito de retificação - Corrigir dados
+  DATA_PORTABILITY     // Direito de portabilidade - Exportar em formato padrão
+  CONSENT_WITHDRAWAL   // Retirada de consentimento
+  PROCESSING_OBJECTION // Objeção ao processamento
+}
+
+enum LGPDRequestStatus {
+  PENDING       // Aguardando revisão
+  APPROVED      // Aprovado pelo admin
+  REJECTED      // Rejeitado
+  IN_PROGRESS   // Em processamento
+  COMPLETED     // Concluído
+  DOWNLOADED    // Já foi baixado
+  EXPIRED       // Link expirou
+}
+
+enum LGPDAuditAction {
+  USER_CREATED
+  USER_UPDATED
+  USER_DELETED
+  USER_ANONYMIZED
+  DATA_EXPORTED
+  CONSENT_GRANTED
+  CONSENT_WITHDRAWN
+  PROFILE_VIEWED
+  PROFILE_UPDATED
+  MESSAGE_SENT
+  MESSAGE_DELETED
+  ACCOUNT_ACCESSED
+  PASSWORD_CHANGED
+  EMAIL_CHANGED
+  DATA_RETENTION_PURGED
+  ADMIN_LOGIN
+  ADMIN_LOGOUT
+  REPORT_RESOLVED
+  BANNER_CREATED
+  BANNER_UPDATED
+  BANNER_DELETED
+  SUBSCRIPTION_MODIFIED
+  USER_BLOCKED
+  USER_UNBLOCKED
+  SETTINGS_CHANGED
+}
+
+enum ConsumableType {
+  BOOST                 // Boost de perfil - aumenta visibilidade
+  SUPERLIKES           // SuperLikes premium
+  UNLIMITED_LIKES      // Curtidas ilimitadas por período
+  VISIBILITY_PASS      // Aumenta visibilidade por X dias
+  SPOTLIGHT            // Destaca o perfil em topo
+  LIKES_NOTIFICATION   // Ver quem curtiu
+  TRAVEL_PASS          // Viagem global
+  RESET_STACK          // Reseta o deck de discovery
+  PRIORITY_MESSAGE     // Mensagem prioritária
+}
+
+enum ConsumableStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum PurchaseStatus {
+  PENDING         // Aguardando processamento
+  PROCESSING      // Processando pagamento
+  COMPLETED       // Compra realizada
+  FAILED          // Falha no pagamento
+  REFUNDED        // Reembolso processado
+  CANCELLED       // Cancelado pelo usuário
+}
+
+enum DocumentType {
+  CPF
+  PASSPORT
+  CNH
+  RG
+  BIRTH_CERTIFICATE
 }

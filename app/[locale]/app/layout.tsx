@@ -20,6 +20,7 @@ import {
   Plane,
   Coffee,
   Crown,
+  ShoppingBag,
 } from "lucide-react";
 
 // Removed static userMenuItems to define them inside AppLayout with translations
@@ -28,6 +29,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession() || {};
   const t = useTranslations('Common');
   const router = useRouter();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const userMenuItems: SidebarItem[] = [
     { label: t('dashboard'), href: "/app", icon: LayoutDashboard },
@@ -38,6 +40,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { label: t('travel'), href: "/app/passaporte", icon: Plane },
     { label: t('go_out_today'), href: "/app/sair-hoje", icon: Coffee },
     { label: t('subscription'), href: "/app/assinatura", icon: CreditCard },
+    { label: t('purchases'), href: "/app/compras", icon: ShoppingBag },
     { label: t('plans'), href: "/app/planos", icon: Crown },
     { label: t('settings'), href: "/app/configuracoes", icon: Settings },
   ];
@@ -95,10 +98,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     return newItem;
   });
 
+
   return (
     <PaywallProvider>
       <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
         <Sidebar
+          mobileOpen={mobileOpen}
+          setMobileOpen={setMobileOpen}
           items={dynamicMenuItems}
           logo={
             <Link href={baseHref} className="flex items-center gap-2">
@@ -113,7 +119,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           }
         />
         <div className="lg:pl-64 min-h-screen flex flex-col">
-          <Header />
+          <Header onMenuClick={() => setMobileOpen(true)} />
           <main className="flex-1 p-4 lg:p-8 w-full max-w-7xl mx-auto">
             {children}
           </main>

@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ import { cn } from "@/lib/utils";
 export default function PerfilPage() {
   const { data: session, update } = useSession();
   const t = useTranslations('Profile');
+  const tPurchases = useTranslations('Purchases');
   const tCat = useTranslations('ProfileCategories');
   const common = useTranslations('Common');
   
@@ -92,6 +94,9 @@ export default function PerfilPage() {
 
   // Estados para "Sugerir Melhorias"
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+
+  // Estados para Abas e Compras
+  // Compras removidas para página dedicada
 
   // Estado unificado com todas as seções: Básica, Profissional e Localização
   const [formData, setFormData] = useState({
@@ -167,6 +172,7 @@ export default function PerfilPage() {
     loadProfile();
     loadCategoriesAndAnswers();
   }, [session]);
+
 
 
   const [languagesOpen, setLanguagesOpen] = useState(false);

@@ -101,6 +101,20 @@ export const authOptions: NextAuthOptions = {
           eventData: { timestamp: new Date().toISOString() },
         },
       }).catch(() => { });
+
+      // Log LGPD Audit for Admin Login
+      if (user.role === 'ADMIN' || user.role === 'SUPERADMIN') {
+        await prisma.lGPDAuditLog.create({
+          data: {
+            userId: user.id,
+            actionType: 'ADMIN_LOGIN',
+            entityType: 'User',
+            entityId: user.id,
+            description: `Admin login realizado por ${user.email}`,
+            performedBy: user.id,
+          },
+        }).catch((e) => console.error('Failed to log admin login:', e));
+      }
     },
   },
   secret: process.env.NEXTAUTH_SECRET,

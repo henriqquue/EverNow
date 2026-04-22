@@ -127,220 +127,233 @@ export default function ViewProfilePage() {
   const categories = Object.entries(profile.profileByCategory || {});
 
   return (
-    <div className="max-w-2xl mx-auto pb-20">
-      {/* Header */}
-      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-sm border-b px-4 py-3 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3 overflow-hidden">
+    <div className="h-[calc(100vh-64px)] flex items-center justify-center bg-neutral-50/50 dark:bg-neutral-950 p-4 md:p-8">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-5xl h-full max-h-[850px] bg-white dark:bg-neutral-900 rounded-[2rem] shadow-2xl shadow-neutral-200 dark:shadow-none overflow-hidden border border-neutral-100 dark:border-neutral-800 flex flex-col md:flex-row"
+      >
+        {/* Mobile Header (Hidden on Desktop) */}
+        <div className="md:hidden flex items-center justify-between p-4 border-b">
           <Button variant="ghost" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="font-semibold truncate">{profile.name || t('profile')}</h1>
+          <h1 className="font-bold">{profile.name}</h1>
+          <Button variant="ghost" size="icon" onClick={() => setShowReportModal(true)}>
+            <Flag className="w-5 h-5 text-neutral-400" />
+          </Button>
         </div>
-        <div className="flex items-center gap-1">
+
+        {/* Photo Section (Left side on desktop) */}
+        <div className="w-full md:w-[45%] h-[400px] md:h-full relative bg-neutral-100 dark:bg-neutral-800">
+          <img
+            src={photos[currentPhoto]}
+            alt={profile.name || t('photo_alt')}
+            className="w-full h-full object-cover"
+          />
+          
+          {/* Back button (Desktop only) */}
+          <Button 
+            variant="secondary" 
+            size="icon" 
+            onClick={() => router.back()}
+            className="absolute top-6 left-6 z-20 rounded-full bg-white/80 backdrop-blur-md border-none shadow-lg hidden md:flex"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+
+          {/* Indicators */}
+          {photos.length > 1 && (
+            <div className="absolute top-6 left-0 right-0 flex justify-center gap-1.5 z-10">
+              {photos.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentPhoto(i)}
+                  className={`h-1 rounded-full transition-all shadow-sm ${i === currentPhoto ? 'w-10 bg-white' : 'w-5 bg-white/40 hover:bg-white/60'}`}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Navigation Arrows */}
+          {photos.length > 1 && (
+            <>
+              <button
+                onClick={() => setCurrentPhoto((prev) => (prev > 0 ? prev - 1 : photos.length - 1))}
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/20 hover:bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-all border border-white/10"
+              >
+                <ChevronLeft className="w-8 h-8" />
+              </button>
+              <button
+                onClick={() => setCurrentPhoto((prev) => (prev < photos.length - 1 ? prev + 1 : 0))}
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/20 hover:bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-all border border-white/10"
+              >
+                <ChevronRight className="w-8 h-8" />
+              </button>
+            </>
+          )}
+
+          {/* Report Button (Desktop only) */}
           <Button
-            variant="ghost"
+            variant="secondary"
             size="icon"
-            className="text-muted-foreground hover:text-red-500"
+            className="absolute bottom-6 right-6 z-20 rounded-full bg-white/20 hover:bg-red-500/80 backdrop-blur-md border-none text-white transition-all hidden md:flex"
             onClick={() => setShowReportModal(true)}
-            title={t('report_profile')}
           >
             <Flag className="w-5 h-5" />
           </Button>
         </div>
-      </div>
 
-      {/* Photo gallery */}
-      <div className="relative aspect-[3/4] bg-muted group">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={photos[currentPhoto]}
-          alt={profile.name || t('photo_alt')}
-          className="w-full h-full object-cover"
-        />
-        
-        {/* Indicators */}
-        {photos.length > 1 && (
-          <div className="absolute top-3 left-0 right-0 flex justify-center gap-1 z-10">
-            {photos.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentPhoto(i)}
-                className={`h-1.5 rounded-full transition-all shadow-sm ${i === currentPhoto ? 'w-8 bg-white' : 'w-4 bg-white/50 hover:bg-white/70'}`}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Navigation Arrows */}
-        {photos.length > 1 && (
-          <>
-            <button
-              onClick={() => setCurrentPhoto((prev) => (prev > 0 ? prev - 1 : photos.length - 1))}
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-            <button
-              onClick={() => setCurrentPhoto((prev) => (prev < photos.length - 1 ? prev + 1 : 0))}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </button>
-          </>
-        )}
-        
-        {/* Invisible tap zones for mobile */}
-        {photos.length > 1 && (
-          <div className="absolute inset-0 flex z-0">
-            <div className="w-1/2 h-full cursor-pointer" onClick={() => setCurrentPhoto((prev) => (prev > 0 ? prev - 1 : prev))} />
-            <div className="w-1/2 h-full cursor-pointer" onClick={() => setCurrentPhoto((prev) => (prev < photos.length - 1 ? prev + 1 : prev))} />
-          </div>
-        )}
-      </div>
-
-      {/* Info */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="px-4 -mt-8 relative z-10">
-        <Card>
-          <CardContent className="p-6 space-y-4">
+        {/* Info Section (Right side on desktop) */}
+        <div className="flex-1 h-full overflow-y-auto p-6 md:p-10 custom-scrollbar">
+          <div className="space-y-8">
+            {/* Main Info */}
             <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-2xl font-bold">
+              <div className="space-y-1">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-4xl font-black text-neutral-900 dark:text-white">
                     {profile.name}{profile.age ? `, ${profile.age}` : ''}
                   </h2>
                   {profile.isVerified && (
-                    <BadgeCheck className="w-5 h-5 text-blue-500" />
+                    <div className="bg-blue-500 rounded-full p-1 shadow-lg shadow-blue-500/20">
+                      <BadgeCheck className="w-5 h-5 text-white" />
+                    </div>
                   )}
                 </div>
-                {profile.headline && (
-                  <p className="text-muted-foreground text-sm mt-1">{profile.headline}</p>
-                )}
-                {profile.pronouns && (
-                  <p className="text-xs text-muted-foreground">{profile.pronouns}</p>
+                <div className="flex flex-wrap items-center gap-4 text-neutral-500 font-medium">
+                  {profile.city && (
+                    <span className="flex items-center gap-1.5 text-sm">
+                      <MapPin size={16} className="text-primary-500" />
+                      {profile.city}, {profile.state}
+                    </span>
+                  )}
+                  {profile.pronouns && (
+                    <Badge variant="outline" className="bg-neutral-50 dark:bg-neutral-800 text-[10px] font-bold">
+                      {profile.pronouns}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Button className="rounded-full bg-gradient-brand text-white font-black px-6 shadow-xl shadow-primary-500/20">
+                  Conectar
+                </Button>
+                {profile.statusMood && (
+                  <div className="flex justify-center">
+                    <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none font-bold">
+                      {profile.statusMood}
+                    </Badge>
+                  </div>
                 )}
               </div>
-              {profile.statusMood && (
-                <Badge variant="secondary">{profile.statusMood}</Badge>
-              )}
             </div>
 
-            {/* Details */}
+            {/* Quick Details */}
             <div className="flex flex-wrap gap-2">
               {profile.gender && (
-                <Badge variant="outline" className="bg-indigo-50/50 border-indigo-100 text-indigo-700">
+                <div className="px-4 py-2 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 text-sm font-bold flex items-center gap-2">
+                  <User size={16} />
                   {t(`gender_${profile.gender.toLowerCase()}`)}
-                </Badge>
+                </div>
               )}
               {profile.lookingFor && (
-                <Badge variant="outline" className="bg-pink-50/50 border-pink-100 text-pink-700">
+                <div className="px-4 py-2 rounded-2xl bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300 text-sm font-bold flex items-center gap-2">
+                  <Heart size={16} />
                   {t(`looking_${profile.lookingFor.toLowerCase()}`)}
-                </Badge>
+                </div>
               )}
               {profile.relationshipStatus && (
-                <Badge variant="outline" className="bg-blue-50/50 border-blue-100 text-blue-700">
+                <div className="px-4 py-2 rounded-2xl bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-bold flex items-center gap-2">
+                  <Users size={16} />
                   {t(`status_${profile.relationshipStatus}`)}
-                </Badge>
+                </div>
               )}
             </div>
-
-            {/* Location */}
-            {(profile.city || profile.state || profile.neighborhood) && (
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <MapPin className="w-4 h-4" />
-                {[profile.country, profile.state, profile.city, profile.neighborhood].filter(Boolean).join(', ')}
-              </div>
-            )}
-
-            {/* Work & Education */}
-            {profile.work && (
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <Briefcase className="w-4 h-4" /> {profile.work}
-              </div>
-            )}
-            {profile.education && (
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <GraduationCap className="w-4 h-4" /> {profile.education}
-              </div>
-            )}
 
             {/* Bio */}
             {profile.bio && (
-              <div>
-                <h3 className="text-sm font-semibold mb-1">{t('about')}</h3>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{profile.bio}</p>
+              <div className="space-y-3">
+                <h3 className="text-xs font-black uppercase tracking-widest text-neutral-400">Sobre</h3>
+                <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed font-medium bg-neutral-50 dark:bg-neutral-800/50 p-6 rounded-3xl">
+                  {profile.bio}
+                </p>
               </div>
             )}
 
-            {/* Interests */}
-            {profile.interests.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold mb-2">{t('interests')}</h3>
-                <div className="flex flex-wrap gap-2">
-                  {profile.interests.map((interest) => (
-                    <Badge key={interest} variant="secondary">{interest}</Badge>
-                  ))}
+            {/* Categories */}
+            {categories.length > 0 && (
+              <div className="space-y-6 pt-6 border-t border-neutral-100 dark:border-neutral-800">
+                <h3 className="text-xs font-black uppercase tracking-widest text-neutral-400">Preferências & Estilo</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {categories.map(([slug, cat]) => {
+                    if (cat.values.length === 0) return null;
+                    
+                    const Icon = slug === 'basico' ? User 
+                      : slug === 'intencao' ? Heart 
+                      : slug === 'aparencia' ? Smile 
+                      : slug === 'familia' ? Users 
+                      : slug === 'religiao' ? Sparkles 
+                      : slug === 'estilo-vida' ? Activity 
+                      : slug === 'habitos' ? Coffee 
+                      : slug === 'cultura' ? Music 
+                      : slug === 'pets' ? Cat 
+                      : slug === 'profissao' ? Briefcase 
+                      : slug === 'encontro' ? MapPin 
+                      : Sparkles;
+
+                    return (
+                      <div key={slug} className="bg-neutral-50 dark:bg-neutral-800/30 p-5 rounded-3xl border border-neutral-100 dark:border-neutral-800 hover:border-primary-200 dark:hover:border-primary-900/30 transition-colors">
+                        <h4 className="text-[11px] font-black uppercase tracking-wider mb-3 flex items-center gap-2 text-neutral-500">
+                          <Icon className="w-3.5 h-3.5 text-primary-500" />
+                          {tCat.has(`cat_${slug}` as any) ? tCat(`cat_${slug}` as any) : cat.name}
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {cat.values.map((v) => {
+                            const optionSlug = OPTION_NAME_TO_SLUG[v];
+                            const translatedLabel = optionSlug && tCat.has(`opt_${optionSlug}` as any) ? tCat(`opt_${optionSlug}` as any) : v;
+                            return (
+                              <Badge 
+                                key={v} 
+                                variant="secondary" 
+                                className="text-xs font-bold bg-white dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200 border-none shadow-sm"
+                              >
+                                {translatedLabel}
+                              </Badge>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-            {/* Languages */}
-            {profile.languages.length > 0 && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Globe className="w-4 h-4" />
-                {profile.languages.map(lang => 
-                  LANGUAGE_KEYS[lang] && tLang.has(LANGUAGE_KEYS[lang] as any) ? tLang(LANGUAGE_KEYS[lang] as any) : lang
-                ).join(', ')}
-              </div>
-            )}
-
-            {/* Profile categories */}
-            {categories.length > 0 && (
-              <div className="space-y-4 pt-4 border-t border-gray-100 mt-4">
-                {categories.map(([slug, cat]) => {
-                  if (cat.values.length === 0) return null;
-                  
-                  // Simple icon mapping based on slug
-                  const Icon = slug === 'basico' ? User 
-                    : slug === 'intencao' ? Heart 
-                    : slug === 'aparencia' ? Smile 
-                    : slug === 'familia' ? Users 
-                    : slug === 'religiao' ? Sparkles 
-                    : slug === 'estilo-vida' ? Activity 
-                    : slug === 'habitos' ? Coffee 
-                    : slug === 'cultura' ? Music 
-                    : slug === 'pets' ? Cat 
-                    : slug === 'profissao' ? Briefcase 
-                    : slug === 'encontro' ? MapPin 
-                    : Sparkles;
-
-                  return (
-                    <div key={slug} className="bg-gray-50/50 p-3 rounded-xl border border-gray-100">
-                      <h3 className="text-[13px] font-bold mb-2 flex items-center gap-1.5 text-gray-700">
-                        <Icon className="w-4 h-4 text-indigo-500" />
-                        {tCat.has(`cat_${slug}` as any) ? tCat(`cat_${slug}` as any) : cat.name}
-                      </h3>
-                      <div className="flex flex-wrap gap-1.5">
-                        {cat.values.map((v) => {
-                          const optionSlug = OPTION_NAME_TO_SLUG[v];
-                          const translatedLabel = optionSlug && tCat.has(`opt_${optionSlug}` as any) ? tCat(`opt_${optionSlug}` as any) : v;
-                          return (
-                            <Badge 
-                              key={v} 
-                              variant="default" 
-                              className="text-xs font-medium bg-indigo-100/80 hover:bg-indigo-200 text-indigo-800 border-indigo-200 shadow-sm"
-                            >
-                              {translatedLabel}
-                            </Badge>
-                          );
-                        })}
-                      </div>
+            {/* Professional & Education */}
+            {(profile.work || profile.education) && (
+              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-neutral-100 dark:border-neutral-800">
+                {profile.work && (
+                  <div className="space-y-2">
+                    <h3 className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Trabalho</h3>
+                    <div className="flex items-center gap-2 text-neutral-700 dark:text-neutral-300 font-bold">
+                      <Briefcase size={16} className="text-primary-500" />
+                      {profile.work}
                     </div>
-                  );
-                })}
+                  </div>
+                )}
+                {profile.education && (
+                  <div className="space-y-2">
+                    <h3 className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Educação</h3>
+                    <div className="flex items-center gap-2 text-neutral-700 dark:text-neutral-300 font-bold">
+                      <GraduationCap size={16} className="text-primary-500" />
+                      {profile.education}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </motion.div>
 
       <ReportModal

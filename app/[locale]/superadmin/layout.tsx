@@ -23,6 +23,7 @@ import {
   Ticket,
   MonitorPlay,
   UserCog,
+  Shield,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -42,6 +43,8 @@ const superadminMenuItems = [
   { label: "CMS", href: "/superadmin/cms", icon: FileText },
   { label: "Métricas", href: "/superadmin/metricas", icon: BarChart3 },
   { label: "Perfil Governança", href: "/superadmin/perfil-governanca", icon: UserCog },
+  { label: "LGPD", href: "/superadmin/lgpd", icon: Shield },
+  { label: "Configurações", href: "/superadmin/configuracoes", icon: UserCog },
 ];
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {

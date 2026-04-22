@@ -6,16 +6,17 @@ import { useSession, signOut } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Bell, Settings, LogOut, User, ChevronDown, Moon, Sun } from "lucide-react";
+import { Bell, Settings, LogOut, User, ChevronDown, Moon, Sun, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 
 interface HeaderProps {
   className?: string;
+  onMenuClick?: () => void;
 }
 
-export function Header({ className }: HeaderProps) {
+export function Header({ className, onMenuClick }: HeaderProps) {
   const { data: session } = useSession() || {};
   const t = useTranslations('Common');
   const nt = useTranslations('Notifications');
@@ -137,8 +138,16 @@ export function Header({ className }: HeaderProps) {
       )}
     >
       <div className="h-full flex items-center justify-between px-4 lg:px-8">
+        {/* Mobile Menu Button */}
+        <button
+          onClick={onMenuClick}
+          className="lg:hidden p-2 -ml-2 rounded-lg text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition-colors"
+        >
+          <Menu className="h-6 w-6" />
+        </button>
+
         {/* Left side - can add breadcrumbs or search */}
-        <div className="flex-1" />
+        <div className="flex-1 hidden lg:block" />
 
         {/* Right side - notifications and profile */}
         <div className="flex items-center gap-3">

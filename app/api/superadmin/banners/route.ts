@@ -73,6 +73,18 @@ export async function POST(req: Request) {
       },
     });
 
+    // Log audit
+    await prisma.lGPDAuditLog.create({
+      data: {
+        userId: user.id,
+        actionType: 'BANNER_CREATED',
+        entityType: 'Banner',
+        entityId: banner.id,
+        description: `Banner "${banner.name}" criado por ${user.email}`,
+        performedBy: user.id,
+      },
+    }).catch(() => {});
+
     return NextResponse.json({ banner });
   } catch (error) {
     console.error("Error creating banner:", error);

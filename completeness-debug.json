@@ -1,8 +1,8 @@
 {
-  "score": 69.56521739130434,
-  "earnedPoints": 16,
+  "score": 100,
+  "earnedPoints": 23,
   "totalPoints": 23,
-  "photoCount": 0,
+  "photoCount": 6,
   "totalCategoriesCount": 8,
   "basic": {
     "name": true,
@@ -17,6 +17,6 @@
     "education": true
   },
   "location": {
-    "cityAndState": false
+    "cityAndState": true
   }
 }

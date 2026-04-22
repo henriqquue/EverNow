@@ -164,18 +164,20 @@ export async function PUT(request: Request) {
         });
       }
     } else {
-      // Just log the dismiss action
-      await prisma.moderationAction.create({
-        data: {
-          targetUserId: report.reportedUserId,
-          moderatorId: session.user.id,
-          actionType: isResolve ? 'REPORT_RESOLVED' : 'REPORT_DISMISSED',
-          reason: `Denúncia ${isResolve ? 'resolvida' : 'arquivada'}`,
-          notes,
-          reportId: reportId,
-        },
       });
     }
+
+    // Log LGPD Audit for Report Resolution
+    await prisma.lGPDAuditLog.create({
+      data: {
+        userId: report.reportedUserId,
+        actionType: 'REPORT_RESOLVED',
+        entityType: 'Report',
+        entityId: reportId,
+        description: `Denúncia resolvida/arquivada por ${session.user.email}. Ação: ${isResolve ? resolvedActionType || 'RESOLVIDA' : 'ARQUIVADA'}`,
+        performedBy: session.user.id,
+      },
+    }).catch((e) => console.error('Failed to log report resolution:', e));
 
     return NextResponse.json({ success: true, status: newStatus });
   } catch (error: any) {

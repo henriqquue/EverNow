@@ -84,6 +84,18 @@ export async function PUT(
       },
     });
 
+    // Log audit
+    await prisma.lGPDAuditLog.create({
+      data: {
+        userId: user.id,
+        actionType: 'BANNER_UPDATED',
+        entityType: 'Banner',
+        entityId: banner.id,
+        description: `Banner "${banner.name}" atualizado por ${user.email}`,
+        performedBy: user.id,
+      },
+    }).catch(() => {});
+
     return NextResponse.json({ banner });
   } catch (error) {
     console.error("Error updating banner:", error);
@@ -112,6 +124,18 @@ export async function DELETE(
     await prisma.banner.delete({
       where: { id: params.bannerId },
     });
+
+    // Log audit
+    await prisma.lGPDAuditLog.create({
+      data: {
+        userId: user.id,
+        actionType: 'BANNER_DELETED',
+        entityType: 'Banner',
+        entityId: params.bannerId,
+        description: `Banner (ID: ${params.bannerId}) deletado por ${user.email}`,
+        performedBy: user.id,
+      },
+    }).catch(() => {});
 
     return NextResponse.json({ success: true });
   } catch (error) {

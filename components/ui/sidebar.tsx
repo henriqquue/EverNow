@@ -17,23 +17,16 @@ interface SidebarProps {
   items: SidebarItem[];
   logo?: React.ReactNode;
   footer?: React.ReactNode;
+  mobileOpen: boolean;
+  setMobileOpen: (open: boolean) => void;
 }
 
-export function Sidebar({ items, logo, footer }: SidebarProps) {
+export function Sidebar({ items, logo, footer, mobileOpen, setMobileOpen }: SidebarProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = React.useState(false);
-  const [mobileOpen, setMobileOpen] = React.useState(false);
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white dark:bg-neutral-800 shadow-lg"
-      >
-        <Menu className="h-5 w-5" />
-      </button>
-
       {/* Mobile Overlay */}
       <AnimatePresence>
         {mobileOpen && (

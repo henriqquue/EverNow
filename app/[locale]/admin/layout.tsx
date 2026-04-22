@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useEffect } from "react";
 import { Sidebar } from "@/components/ui/sidebar";
 import { Header } from "@/components/ui/header";
@@ -12,14 +13,15 @@ import {
   AlertTriangle,
   BarChart3,
   Shield,
+  Lock,
 } from "lucide-react";
-import Link from "next/link";
 
 const adminMenuItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Usuários", href: "/admin/usuarios", icon: Users },
   { label: "Moderação", href: "/admin/moderacao", icon: AlertTriangle },
   { label: "Relatórios", href: "/admin/relatorios", icon: BarChart3 },
+  { label: "Configurações", href: "/admin/configuracoes", icon: Lock },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
