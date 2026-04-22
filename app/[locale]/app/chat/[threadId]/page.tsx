@@ -359,7 +359,7 @@ export default function ChatPage() {
                 )}
                 {!isOwn && !showAvatar && <div className="w-8" />}
 
-                <div className="max-w-[75%] relative">
+                <div className="max-w-[85%] lg:max-w-[75%] relative">
                   {/* Reply reference */}
                   {msg.replyTo && !isDeleted && (
                     <div className={cn(
@@ -419,8 +419,9 @@ export default function ChatPage() {
                   {/* Action bar (hover) */}
                   {!isDeleted && (
                     <div className={cn(
-                      'absolute top-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity -translate-y-1/2',
-                      isOwn ? 'left-0 -translate-x-full pr-1' : 'right-0 translate-x-full pl-1'
+                      'absolute top-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 lg:group-hover:opacity-100 transition-opacity -translate-y-1/2',
+                      // No mobile, mostramos as ações ao clicar (contextMsg ou showReactions) ou mantemos sutil
+                      isOwn ? 'left-0 -translate-x-full pr-2' : 'right-0 translate-x-full pl-2'
                     )}>
                       <button
                         onClick={() => setShowReactions(showReactions === msg.id ? null : msg.id)}
@@ -533,7 +534,7 @@ export default function ChatPage() {
       </AnimatePresence>
 
       {/* Input */}
-      <div className="sticky bottom-0 bg-background border-t p-4">
+      <div className="sticky bottom-0 bg-background border-t p-3 lg:p-4">
         <div className="flex items-center gap-2">
           <Input
             ref={inputRef}

@@ -13,6 +13,10 @@ import {
   Sparkles,
   Zap,
   Star,
+  Heart,
+  Globe,
+  Eye,
+  RefreshCw,
   Check,
   X,
   Clock,
@@ -22,6 +26,8 @@ import { cn } from "@/lib/utils";
 import { RadixTabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { motion, AnimatePresence } from "framer-motion";
 
+import confetti from "canvas-confetti";
+
 export default function ComprasPage() {
   const { data: session } = useSession();
   const t = useTranslations('Purchases');
@@ -30,34 +36,41 @@ export default function ComprasPage() {
   const [activeTab, setActiveTab] = useState("store");
   const [purchases, setPurchases] = useState<any[]>([]);
   const [storeItems, setStoreItems] = useState<any[]>([]);
+  const [activeBoosts, setActiveBoosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [purchasesRes, storeRes] = await Promise.all([
-          fetch("/api/consumables/purchase"),
-          fetch("/api/consumables")
-        ]);
+  const fetchData = async () => {
+    try {
+      const [purchasesRes, storeRes, boostsRes] = await Promise.all([
+        fetch("/api/consumables/purchase"),
+        fetch("/api/consumables"),
+        fetch("/api/consumables/purchase/active")
+      ]);
 
-        if (purchasesRes.ok) {
-          const data = await purchasesRes.json();
-          setPurchases(data);
-        }
-
-        if (storeRes.ok) {
-          const data = await storeRes.json();
-          setStoreItems(data);
-        }
-      } catch (error) {
-        console.error("Erro ao carregar dados:", error);
-      } finally {
-        setLoading(false);
+      if (purchasesRes.ok) {
+        const data = await purchasesRes.json();
+        setPurchases(data);
       }
-    };
 
+      if (storeRes.ok) {
+        const data = await storeRes.json();
+        setStoreItems(data);
+      }
+
+      if (boostsRes.ok) {
+        const data = await boostsRes.json();
+        setActiveBoosts(data);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (session?.user?.id) {
       fetchData();
     }
@@ -74,13 +87,18 @@ export default function ComprasPage() {
       });
 
       if (res.ok) {
+        // Efeito de Confetes!
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#6366f1', '#a855f7', '#ec4899']
+        });
+
         setMessage({ text: t('purchase_success'), type: 'success' });
-        // Recarregar histórico
-        const purchasesRes = await fetch("/api/consumables/purchase");
-        if (purchasesRes.ok) {
-          const data = await purchasesRes.json();
-          setPurchases(data);
-        }
+        
+        // Recarregar tudo
+        await fetchData();
       } else {
         const error = await res.json();
         setMessage({ text: error.error || t('purchase_error'), type: 'error' });
@@ -142,8 +160,8 @@ export default function ComprasPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {storeItems.map((item) => (
               <Card key={item.id} className={cn(
-                "relative overflow-hidden border-2 transition-all hover:shadow-xl group",
-                item.isPopular ? "border-indigo-500/50 shadow-indigo-100" : "border-transparent"
+                "relative overflow-hidden border transition-all group flex flex-col h-full",
+                item.isPopular ? "border-indigo-500/30 bg-indigo-50/5" : "border-neutral-200 dark:border-neutral-800"
               )}>
                 {item.isPopular && (
                   <div className="absolute top-0 right-0">
@@ -159,17 +177,23 @@ export default function ComprasPage() {
                     "w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110",
                     item.color ? `bg-${item.color}-100 text-${item.color}-600` : "bg-indigo-100 text-indigo-600"
                   )} style={item.color ? { backgroundColor: `${item.color}20`, color: item.color } : {}}>
-                    {item.icon ? (
-                      <Zap size={24} fill="currentColor" />
-                    ) : (
-                      <Sparkles size={24} />
-                    )}
+                    {(() => {
+                      const slug = item.slug;
+                      if (slug.includes('boost')) return <Zap size={24} fill="currentColor" />;
+                      if (slug.includes('superlike')) return <Star size={24} fill="currentColor" />;
+                      if (slug.includes('spotlight')) return <Sparkles size={24} />;
+                      if (slug.includes('unlimited')) return <Heart size={24} fill="currentColor" />;
+                      if (slug.includes('travel')) return <Globe size={24} />;
+                      if (slug.includes('who-liked')) return <Eye size={24} />;
+                      if (slug.includes('reset')) return <RefreshCw size={24} />;
+                      return <ShoppingBag size={24} />;
+                    })()}
                   </div>
-                  <CardTitle className="text-xl font-black">{item.name}</CardTitle>
-                  <CardDescription className="text-sm min-h-[40px]">{item.description}</CardDescription>
+                  <CardTitle className="text-xl font-black leading-tight h-[48px] line-clamp-2">{item.name}</CardTitle>
+                  <CardDescription className="text-sm h-[40px] line-clamp-2">{item.description}</CardDescription>
                 </CardHeader>
 
-                <CardContent className="space-y-4">
+                <CardContent className="flex flex-col flex-1 space-y-4">
                   {item.durationDays && (
                     <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-full w-fit">
                       <Clock size={14} />
@@ -177,39 +201,63 @@ export default function ComprasPage() {
                     </div>
                   )}
 
-                  <div className="space-y-2">
-                    {Object.entries(item.benefits || {}).map(([key, value]: [string, any]) => (
-                      <div key={key} className="flex items-start gap-2 text-xs font-medium text-neutral-600 dark:text-neutral-400">
-                        <Check size={14} className="text-green-500 mt-0.5 shrink-0" />
-                        <span>{String(value)}</span>
-                      </div>
-                    ))}
+                  <div className="space-y-2 flex-1">
+                    {Object.entries(item.benefits || {}).map(([key, value]: [string, any]) => {
+                      // Tradução/Formatação amigável dos benefícios
+                      let label = String(value);
+                      if (value === true) {
+                        const labels: Record<string, string> = {
+                          priority_in_feed: t('benefit_priority'),
+                          special_notification: t('benefit_special_notif'),
+                          unlimited_likes: t('benefit_unlimited'),
+                          see_who_liked: t('benefit_see_likes'),
+                          worldwide_access: t('benefit_worldwide'),
+                          location_change: t('benefit_location'),
+                          reset_discovery: t('benefit_reset')
+                        };
+                        label = labels[key] || key;
+                      } else if (key === 'visibility_boost') {
+                        label = `${value}x ${t('benefit_visibility')}`;
+                      }
+
+                      return (
+                        <div key={key} className="flex items-start gap-2 text-xs font-medium text-neutral-600 dark:text-neutral-400">
+                          <Check size={14} className="text-green-500 mt-0.5 shrink-0" />
+                          <span>{label}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </CardContent>
 
                 <CardFooter className="pt-2">
-                  <Button 
-                    onClick={() => handlePurchase(item.id)}
-                    disabled={purchasingId === item.id}
-                    className={cn(
-                      "w-full font-black text-sm py-6 rounded-xl transition-all active:scale-95",
-                      item.isPopular 
-                        ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200" 
-                        : "bg-neutral-900 hover:bg-black text-white"
-                    )}
-                  >
-                    {purchasingId === item.id ? (
-                      <Loading size="sm" />
-                    ) : (
-                      <div className="flex items-center justify-between w-full px-2">
-                        <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: item.currency || 'BRL' }).format(item.price)}</span>
-                        <div className="flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                          {t('buy_now')}
-                          <ArrowRight size={16} />
-                        </div>
+                  {activeBoosts.some(b => b.itemId === item.id) ? (
+                    <div className="w-full bg-green-500/10 border border-green-500/20 rounded-xl py-4 flex flex-col items-center justify-center gap-1 group">
+                      <div className="flex items-center gap-2 text-green-600 font-black text-sm">
+                        <Zap size={16} fill="currentColor" className="animate-pulse" />
+                        ATIVO
                       </div>
-                    )}
-                  </Button>
+                      <span className="text-[10px] text-green-600/70 font-bold uppercase">Recurso habilitado</span>
+                    </div>
+                  ) : (
+                    <Button 
+                      onClick={() => handlePurchase(item.id)}
+                      disabled={purchasingId === item.id}
+                      className="w-full font-black text-sm py-6 rounded-xl transition-all active:scale-95 bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-none shadow-lg shadow-indigo-200/50 hover:brightness-110"
+                    >
+                      {purchasingId === item.id ? (
+                        <Loading size="sm" />
+                      ) : (
+                        <div className="flex items-center justify-between w-full px-2">
+                          <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: item.currency || 'BRL' }).format(item.price)}</span>
+                          <div className="flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                            {t('buy_now')}
+                            <ArrowRight size={16} />
+                          </div>
+                        </div>
+                      )}
+                    </Button>
+                  )}
                 </CardFooter>
               </Card>
             ))}

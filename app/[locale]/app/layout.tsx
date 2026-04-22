@@ -48,6 +48,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // Fecha o menu mobile automaticamente ao trocar de página
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
   const fetchUnreadCount = useCallback(async () => {
     if (status !== "authenticated") return;
     try {
@@ -120,9 +125,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         />
         <div className="lg:pl-64 min-h-screen flex flex-col">
           <Header onMenuClick={() => setMobileOpen(true)} />
-          <main className="flex-1 p-4 lg:p-8 w-full max-w-7xl mx-auto">
+          <motion.main 
+            key={pathname}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex-1 p-4 lg:p-8 w-full max-w-7xl mx-auto"
+          >
             {children}
-          </main>
+          </motion.main>
         </div>
       </div>
     </PaywallProvider>

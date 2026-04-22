@@ -104,7 +104,7 @@ export default function AppDashboard() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         <StatsCard
           title={t('likes_received')}
           value={stats.likesReceived}
@@ -143,30 +143,30 @@ export default function AppDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5 text-primary-500" />
+          <Card className="h-full">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <User className="h-5 w-5 text-indigo-500" />
                 {t('complete_profile')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <div className="flex justify-between mb-2">
-                  <span className="text-sm text-neutral-600 dark:text-neutral-400">
+                  <span className="text-xs text-neutral-600 dark:text-neutral-400">
                     {t('progress')}
                   </span>
-                  <span className="text-sm font-medium text-primary-600">
+                  <span className="text-xs font-bold text-indigo-600">
                     {stats.profileCompletion}%
                   </span>
                 </div>
-                <Progress value={stats.profileCompletion} color="primary" />
+                <Progress value={stats.profileCompletion} color="primary" className="h-2" />
               </div>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
                 {t('complete_profile_desc')}
               </p>
               <Link href="/app/perfil">
-                <Button className="w-full" variant="outline">
+                <Button className="w-full text-xs font-bold" variant="outline">
                   {t('complete_profile_btn')}
                 </Button>
               </Link>
@@ -181,44 +181,44 @@ export default function AppDashboard() {
           transition={{ delay: 0.5 }}
           className="lg:col-span-2"
         >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary-500" />
+          <Card className="h-full">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Sparkles className="h-5 w-5 text-indigo-500" />
                 {t('quick_actions')}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid sm:grid-cols-3 gap-4">
-                <Link href="/app/descobrir" className="block">
-                  <div className="p-4 rounded-xl bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors text-center">
-                    <Heart className="h-8 w-8 text-primary-500 mx-auto mb-2" />
-                    <p className="font-medium text-neutral-900 dark:text-white">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Link href="/app/descobrir" className="block group">
+                  <div className="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 transition-all text-center border border-indigo-100/50 dark:border-indigo-800/50">
+                    <Heart className="h-6 w-6 text-indigo-600 mx-auto mb-2" />
+                    <p className="font-bold text-sm text-neutral-900 dark:text-white">
                       {t('discover_people')}
                     </p>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                    <p className="text-[10px] text-neutral-600 dark:text-neutral-400 mt-1">
                       {t('find_connections')}
                     </p>
                   </div>
                 </Link>
-                <Link href="/app/perfil" className="block">
-                  <div className="p-4 rounded-xl bg-secondary-50 dark:bg-secondary-900/20 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 transition-colors text-center">
-                    <Camera className="h-8 w-8 text-secondary-500 mx-auto mb-2" />
-                    <p className="font-medium text-neutral-900 dark:text-white">
+                <Link href="/app/perfil" className="block group">
+                  <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/30 transition-all text-center border border-purple-100/50 dark:border-purple-800/50">
+                    <Camera className="h-6 w-6 text-purple-600 mx-auto mb-2" />
+                    <p className="font-bold text-sm text-neutral-900 dark:text-white">
                       {t('add_photos')}
                     </p>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                    <p className="text-[10px] text-neutral-600 dark:text-neutral-400 mt-1">
                       {t('update_photos')}
                     </p>
                   </div>
                 </Link>
-                <Link href="/app/perfil" className="block">
-                  <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors text-center">
-                    <MapPin className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                    <p className="font-medium text-neutral-900 dark:text-white">
+                <Link href="/app/perfil" className="block group">
+                  <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 group-hover:bg-green-100 dark:group-hover:bg-green-900/30 transition-all text-center border border-green-100/50 dark:border-green-800/50">
+                    <MapPin className="h-6 w-6 text-green-600 mx-auto mb-2" />
+                    <p className="font-bold text-sm text-neutral-900 dark:text-white">
                       {t('update_location')}
                     </p>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                    <p className="text-[10px] text-neutral-600 dark:text-neutral-400 mt-1">
                       {t('set_location')}
                     </p>
                   </div>

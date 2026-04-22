@@ -82,7 +82,7 @@ export default function ConversasPage() {
   return (
     <div className="min-h-screen pb-20 max-w-3xl mx-auto">
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b">
+      <div className="sticky top-16 z-30 bg-background/95 backdrop-blur border-b">
         <div className="p-4">
           <div>
             <h1 className="text-2xl font-black tracking-tight flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">

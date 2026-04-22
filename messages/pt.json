@@ -314,7 +314,15 @@
     "purchase_success": "Item adquirido com sucesso!",
     "purchase_error": "Erro ao processar compra",
     "active_until": "Ativo até {date}",
-    "boost_active": "Boost Ativo"
+    "boost_active": "Boost Ativo",
+    "benefit_priority": "Prioridade no Discovery",
+    "benefit_special_notif": "Notificação especial",
+    "benefit_unlimited": "Curtidas ilimitadas",
+    "benefit_see_likes": "Ver quem te curtiu",
+    "benefit_worldwide": "Acesso mundial",
+    "benefit_location": "Mudar localização",
+    "benefit_reset": "Resetar discovery",
+    "benefit_visibility": "mais visibilidade"
   },
   "Settings": {
     "title": "Configurações",
