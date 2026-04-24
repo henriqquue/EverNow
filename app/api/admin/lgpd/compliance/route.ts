@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-options';
-import { db } from '@/lib/db';
+import { prisma as db } from '@/lib/db';
 
 /**
  * GET /api/admin/lgpd/compliance
@@ -23,52 +23,47 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Estatísticas gerais
-    const totalUsers = await db.user.count();
-    const usersWithConsent = await db.userConsent.count();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Parallelize all statistics queries
+    const [
+      totalUsers,
+      usersWithConsent,
+      lgpdStats,
+      requestsByType,
+      recentRequests,
+      recentAuditLogs,
+      compliance,
+      criticalCompliance
+    ] = await Promise.all([
+      db.user.count(),
+      db.userConsent.count(),
+      db.lGPDRequest.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
+      db.lGPDRequest.groupBy({
+        by: ['requestType'],
+        _count: { id: true },
+      }),
+      db.lGPDRequest.count({
+        where: { createdAt: { gte: thirtyDaysAgo } },
+      }),
+      db.lGPDAuditLog.count({
+        where: { createdAt: { gte: thirtyDaysAgo } },
+      }),
+      db.lGPDCompliance.aggregate({
+        _avg: { complianceScore: true },
+        _min: { complianceScore: true },
+        _max: { complianceScore: true },
+      }),
+      db.lGPDCompliance.count({
+        where: { complianceScore: { lt: 50 } },
+      }),
+    ]);
+
     const consentPercentage = totalUsers > 0 ? ((usersWithConsent / totalUsers) * 100).toFixed(2) : 0;
-
-    // Requisições LGPD
-    const lgpdStats = await db.lGPDRequest.groupBy({
-      by: ['status'],
-      _count: {
-        id: true,
-      },
-    });
-
-    const requestsByType = await db.lGPDRequest.groupBy({
-      by: ['requestType'],
-      _count: {
-        id: true,
-      },
-    });
-
-    // Últimos 30 dias
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    
-    const recentRequests = await db.lGPDRequest.count({
-      where: {
-        createdAt: { gte: thirtyDaysAgo },
-      },
-    });
-
-    const recentAuditLogs = await db.lGPDAuditLog.count({
-      where: {
-        createdAt: { gte: thirtyDaysAgo },
-      },
-    });
-
-    // Conformidade média dos usuários
-    const compliance = await db.lGPDCompliance.aggregate({
-      _avg: { complianceScore: true },
-      _min: { complianceScore: true },
-      _max: { complianceScore: true },
-    });
-
-    // Usuários com compliance crítico (< 50)
-    const criticalCompliance = await db.lGPDCompliance.count({
-      where: { complianceScore: { lt: 50 } },
-    });
 
     // Dados para exportação (resumo)
     const report = {
@@ -101,18 +96,20 @@ export async function GET(req: NextRequest) {
     };
 
     // Adicionar recomendações
+    const recommendations: string[] = [];
     if (Number(consentPercentage) < 80) {
-      report.recommendations.push('⚠️ Menos de 80% dos usuários com consentimento. Considere enviar campanha de re-consentimento.');
+      recommendations.push('⚠️ Menos de 80% dos usuários com consentimento. Considere enviar campanha de re-consentimento.');
     }
 
     if (criticalCompliance > 0) {
-      report.recommendations.push(`⚠️ ${criticalCompliance} usuários com score de conformidade crítico. Revisar e auditar.`);
+      recommendations.push(`⚠️ ${criticalCompliance} usuários com score de conformidade crítico. Revisar e auditar.`);
     }
 
     const pendingRequests = lgpdStats.find(s => s.status === 'PENDING')?._count.id || 0;
     if (pendingRequests > 10) {
-      report.recommendations.push(`⚠️ ${pendingRequests} requisições LGPD pendentes. Requer ação rápida.`);
+      recommendations.push(`⚠️ ${pendingRequests} requisições LGPD pendentes. Requer ação rápida.`);
     }
+    report.recommendations = recommendations;
 
     return NextResponse.json(report);
   } catch (error) {

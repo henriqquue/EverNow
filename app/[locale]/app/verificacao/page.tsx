@@ -319,6 +319,7 @@ export default function VerificacaoPage() {
                     <input 
                       type="file" 
                       accept="image/*" 
+                      capture="user"
                       className="absolute inset-0 opacity-0 cursor-pointer" 
                       onChange={handleFileChange}
                     />

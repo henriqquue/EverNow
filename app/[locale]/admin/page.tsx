@@ -11,6 +11,7 @@ import {
   Shield,
   Loader2,
 } from "lucide-react";
+import { Link } from "@/navigation";
 import { motion } from "framer-motion";
 
 interface Stats {
@@ -56,7 +57,33 @@ export default function AdminDashboard() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Painel de Emergência Mobile */}
+      <div className="lg:hidden space-y-4">
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
+          <h2 className="text-sm font-bold text-amber-800 dark:text-amber-400 flex items-center gap-2 mb-3">
+            <AlertTriangle className="w-4 h-4" />
+            Ações de Emergência
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            <Link href="/admin/moderacao" className="flex flex-col items-center justify-center p-3 bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 text-center transition-active active:scale-95">
+              <AlertTriangle className="w-5 h-5 text-red-500 mb-1" />
+              <span className="text-[10px] font-bold uppercase">Moderar Denúncias</span>
+              {stats?.pendingReports && stats.pendingReports > 0 ? (
+                <Badge variant="destructive" className="mt-1 h-4 text-[8px]">{stats.pendingReports}</Badge>
+              ) : null}
+            </Link>
+            <Link href="/admin/usuarios" className="flex flex-col items-center justify-center p-3 bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 text-center transition-active active:scale-95">
+              <Shield className="w-5 h-5 text-indigo-500 mb-1" />
+              <span className="text-[10px] font-bold uppercase">Verificações</span>
+              {stats?.pendingVerifications && stats.pendingVerifications > 0 ? (
+                <Badge variant="default" className="mt-1 h-4 text-[8px] bg-indigo-500">{stats.pendingVerifications}</Badge>
+              ) : null}
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <StatsCard
             title="Total de usuários"

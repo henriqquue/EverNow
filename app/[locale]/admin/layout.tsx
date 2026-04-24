@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Sidebar } from "@/components/ui/sidebar";
 import { Header } from "@/components/ui/header";
 import { Loading } from "@/components/ui/loading";
@@ -27,6 +27,7 @@ const adminMenuItems = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession() || {};
   const router = useRouter();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -49,6 +50,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
       <Sidebar
         items={adminMenuItems}
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
         logo={
           <Link href="/admin" className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-secondary-500 flex items-center justify-center">
@@ -61,7 +64,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }
       />
       <div className="lg:pl-64">
-        <Header />
+        <Header onMenuClick={() => setMobileOpen(true)} />
         <main className="p-4 lg:p-8">{children}</main>
       </div>
     </div>

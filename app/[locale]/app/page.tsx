@@ -104,7 +104,7 @@ export default function AppDashboard() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         <StatsCard
           title={t('likes_received')}
           value={stats.likesReceived}
@@ -188,38 +188,45 @@ export default function AppDashboard() {
                 {t('quick_actions')}
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <Link href="/app/descobrir" className="block group">
-                  <div className="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 transition-all text-center border border-indigo-100/50 dark:border-indigo-800/50">
-                    <Heart className="h-6 w-6 text-indigo-600 mx-auto mb-2" />
-                    <p className="font-bold text-sm text-neutral-900 dark:text-white">
+            <CardContent className="pb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <Link href="/app/descobrir" className="group h-full">
+                  <div className="flex flex-col items-center justify-center gap-2 p-3.5 h-full min-h-[110px] rounded-2xl bg-indigo-50/50 dark:bg-indigo-900/20 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 active:scale-95 transition-all border border-indigo-100/60 dark:border-indigo-800/50">
+                    <div className="h-12 w-12 rounded-xl bg-indigo-100 dark:bg-indigo-800/40 flex items-center justify-center mb-1 shadow-sm">
+                      <Heart className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <p className="font-bold text-[11px] text-neutral-900 dark:text-white text-center leading-tight">
                       {t('discover_people')}
                     </p>
-                    <p className="text-[10px] text-neutral-600 dark:text-neutral-400 mt-1">
-                      {t('find_connections')}
-                    </p>
                   </div>
                 </Link>
-                <Link href="/app/perfil" className="block group">
-                  <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/30 transition-all text-center border border-purple-100/50 dark:border-purple-800/50">
-                    <Camera className="h-6 w-6 text-purple-600 mx-auto mb-2" />
-                    <p className="font-bold text-sm text-neutral-900 dark:text-white">
+                <Link href="/app/perfil" className="group h-full">
+                  <div className="flex flex-col items-center justify-center gap-2 p-3.5 h-full min-h-[110px] rounded-2xl bg-purple-50/50 dark:bg-purple-900/20 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/30 active:scale-95 transition-all border border-purple-100/60 dark:border-purple-800/50">
+                    <div className="h-12 w-12 rounded-xl bg-purple-100 dark:bg-purple-800/40 flex items-center justify-center mb-1 shadow-sm">
+                      <Camera className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <p className="font-bold text-[11px] text-neutral-900 dark:text-white text-center leading-tight">
                       {t('add_photos')}
                     </p>
-                    <p className="text-[10px] text-neutral-600 dark:text-neutral-400 mt-1">
-                      {t('update_photos')}
+                  </div>
+                </Link>
+                <Link href="/app/perfil" className="group h-full">
+                  <div className="flex flex-col items-center justify-center gap-2 p-3.5 h-full min-h-[110px] rounded-2xl bg-emerald-50/50 dark:bg-emerald-900/20 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/30 active:scale-95 transition-all border border-emerald-100/60 dark:border-emerald-800/50">
+                    <div className="h-12 w-12 rounded-xl bg-emerald-100 dark:bg-emerald-800/40 flex items-center justify-center mb-1 shadow-sm">
+                      <MapPin className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <p className="font-bold text-[11px] text-neutral-900 dark:text-white text-center leading-tight">
+                      {t('update_location')}
                     </p>
                   </div>
                 </Link>
-                <Link href="/app/perfil" className="block group">
-                  <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 group-hover:bg-green-100 dark:group-hover:bg-green-900/30 transition-all text-center border border-green-100/50 dark:border-green-800/50">
-                    <MapPin className="h-6 w-6 text-green-600 mx-auto mb-2" />
-                    <p className="font-bold text-sm text-neutral-900 dark:text-white">
-                      {t('update_location')}
-                    </p>
-                    <p className="text-[10px] text-neutral-600 dark:text-neutral-400 mt-1">
-                      {t('set_location')}
+                <Link href="/app/matches" className="group h-full">
+                  <div className="flex flex-col items-center justify-center gap-2 p-3.5 h-full min-h-[110px] rounded-2xl bg-rose-50/50 dark:bg-rose-900/20 group-hover:bg-rose-100 dark:group-hover:bg-rose-900/30 active:scale-95 transition-all border border-rose-100/60 dark:border-rose-800/50">
+                    <div className="h-12 w-12 rounded-xl bg-rose-100 dark:bg-rose-800/40 flex items-center justify-center mb-1 shadow-sm">
+                      <Users className="h-6 w-6 text-rose-600 dark:text-rose-400" />
+                    </div>
+                    <p className="font-bold text-[11px] text-neutral-900 dark:text-white text-center leading-tight">
+                      {t('connections')}
                     </p>
                   </div>
                 </Link>
@@ -235,28 +242,37 @@ export default function AppDashboard() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
       >
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Info className="h-5 w-5 text-primary-500" />
-              {t('current_plan')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Badge variant={isPremium ? "premium" : "default"}>
-                  {isPremium ? t('premium') : t('free')}
-                </Badge>
-                <span className="text-neutral-600 dark:text-neutral-400">
+        <Card className="overflow-hidden">
+          <div className={`h-1.5 w-full ${isPremium ? 'bg-gradient-to-r from-amber-400 via-yellow-300 to-orange-400' : 'bg-gradient-to-r from-indigo-500 to-purple-500'}`} />
+          <CardContent className="pt-5 pb-5">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-4">
+                <div className={`h-12 w-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${isPremium ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-indigo-50 dark:bg-indigo-900/20'}`}>
                   {isPremium
-                    ? t('full_access')
-                    : t('limited_access')}
-                </span>
+                    ? <Crown className={`h-6 w-6 text-amber-500`} />
+                    : <Info className={`h-6 w-6 text-indigo-500`} />
+                  }
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-bold text-base text-neutral-900 dark:text-white">
+                      {t('current_plan')}
+                    </span>
+                    <Badge variant={isPremium ? "premium" : "default"} className="text-[10px] px-2 py-0">
+                      {isPremium ? t('premium') : t('free')}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    {isPremium ? t('full_access') : t('limited_access')}
+                  </p>
+                </div>
               </div>
               {!isPremium && (
-                <Link href="/app/assinatura">
-                  <Button size="sm">{t('upgrade_btn')}</Button>
+                <Link href="/app/assinatura" className="w-full sm:w-auto">
+                  <Button size="sm" className="w-full sm:w-auto gap-1.5">
+                    <Crown className="h-3.5 w-3.5" />
+                    {t('upgrade_btn')}
+                  </Button>
                 </Link>
               )}
             </div>

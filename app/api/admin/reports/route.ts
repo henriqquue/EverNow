@@ -163,8 +163,6 @@ export async function PUT(request: Request) {
           data: { status: 'SUSPENDED', trustScore: 0 },
         });
       }
-    } else {
-      });
     }
 
     // Log LGPD Audit for Report Resolution

@@ -140,27 +140,44 @@ export default function ModeracaoPage() {
     setError(null);
     try {
       const res = await fetch(`/api/admin/reports?page=${reportsPage}&status=${reportsFilter}`);
+      const contentType = res.headers.get("content-type");
+      
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Erro ao carregar denúncias');
+        if (contentType && contentType.includes("application/json")) {
+          const data = await res.json();
+          throw new Error(data.error || 'Erro ao carregar denúncias');
+        }
+        throw new Error(`Erro do servidor (${res.status}). Verifique os logs.`);
       }
-      const data = await res.json();
-      setReports(data.reports || []);
-      setReportsTotal(data.total || 0);
+
+      if (contentType && contentType.includes("application/json")) {
+        const data = await res.json();
+        setReports(data.reports || []);
+        setReportsTotal(data.total || 0);
+      } else {
+        throw new Error("Resposta do servidor em formato inválido (não é JSON)");
+      }
     } catch (err: any) {
       setError(err.message);
     } finally { setReportsLoading(false); }
   }, [reportsPage, reportsFilter]);
 
-  // Fetch verifications
   const fetchVerifications = useCallback(async () => {
     setVerifLoading(true);
     try {
       const res = await fetch(`/api/admin/verification?page=${verifPage}&status=${verifFilter}`);
-      const data = await res.json();
-      setVerifications(data.requests || []);
-      setVerifTotal(data.total || 0);
-    } catch { /* empty */ } finally { setVerifLoading(false); }
+      const contentType = res.headers.get("content-type");
+
+      if (!res.ok) throw new Error(`Erro ${res.status}`);
+
+      if (contentType && contentType.includes("application/json")) {
+        const data = await res.json();
+        setVerifications(data.requests || []);
+        setVerifTotal(data.total || 0);
+      }
+    } catch (err: any) {
+      console.error("Verif fetch error:", err);
+    } finally { setVerifLoading(false); }
   }, [verifPage, verifFilter]);
 
   // Fetch moderation history

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-options';
-import { db } from '@/lib/db';
+import { prisma as db } from '@/lib/db';
 
 /**
  * POST /api/admin/lgpd/anonymize/[userId]

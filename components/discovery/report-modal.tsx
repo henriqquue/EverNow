@@ -18,6 +18,7 @@ interface ReportModalProps {
 
 export function ReportModal({ isOpen, onClose, onSubmit, userName }: ReportModalProps) {
   const t = useTranslations('Chat');
+  const common = useTranslations('Common');
   const [selectedReason, setSelectedReason] = useState('');
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -107,7 +108,7 @@ export function ReportModal({ isOpen, onClose, onSubmit, userName }: ReportModal
             {/* Footer */}
             <div className="flex gap-2 p-4 border-t flex-shrink-0">
               <Button variant="outline" onClick={onClose} className="flex-1">
-                {t('cancel_btn')}
+                {common('cancel')}
               </Button>
               <Button
                 onClick={handleSubmit}

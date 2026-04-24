@@ -35,7 +35,9 @@ import {
   ChevronsUpDown,
   Trash2,
   X,
-  ChevronRight
+  ChevronRight,
+  Lock,
+  AlertCircle
 } from "lucide-react";
 
 const COMMON_LANGUAGES = [
@@ -110,10 +112,20 @@ export default function PerfilPage() {
     country: "",
     languages: [] as string[],
     birthDate: "",
+    birthTime: "",
+    birthPlace: "",
     gender: "",
     lookingFor: "",
-    relationshipStatus: ""
+    relationshipStatus: "",
+    signo: "",
+    birthChartData: null as any,
+    nameChangeCount: 0,
+    allowNameChange: true
   });
+
+  const [nameConfirmOpen, setNameConfirmOpen] = useState(false);
+  const [nameBlockedOpen, setNameBlockedOpen] = useState(false);
+  const [pendingName, setPendingName] = useState("");
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -136,7 +148,13 @@ export default function PerfilPage() {
             birthDate: p.birthDate ? new Date(p.birthDate).toISOString().split('T')[0] : "",
             gender: p.gender || "",
             lookingFor: p.lookingFor || "",
-            relationshipStatus: p.relationshipStatus || ""
+            relationshipStatus: p.relationshipStatus || "",
+            signo: p.signo || "",
+            birthTime: p.birthTime || "",
+            birthPlace: p.birthPlace || "",
+            birthChartData: p.birthChartData || null,
+            nameChangeCount: p.nameChangeCount || 0,
+            allowNameChange: p.allowNameChange ?? true
           });
         }
       } finally {
@@ -239,13 +257,14 @@ export default function PerfilPage() {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (forceData?: any) => {
     setSaving(true);
     try {
+      const dataToSave = forceData || formData;
       const res = await fetch(`/api/profile/${session?.user?.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, photos: profile?.photos || [] }),
+        body: JSON.stringify({ ...dataToSave, photos: profile?.photos || [] }),
       });
 
       if (res.ok) {
@@ -254,6 +273,12 @@ export default function PerfilPage() {
         if (profRes.ok) {
           const { profile: p } = await profRes.json();
           setProfile(p);
+          // Sync formData with new server state (especially nameChangeCount)
+          setFormData(prev => ({
+            ...prev,
+            nameChangeCount: p.nameChangeCount,
+            name: p.name
+          }));
         }
       } else {
         const errData = await res.json().catch(() => ({}));
@@ -265,6 +290,20 @@ export default function PerfilPage() {
       setSaving(false);
       setTimeout(() => setSaveMsg(null), 3000);
     }
+  };
+
+  const onSaveClick = () => {
+    // Check if name is changing
+    if (formData.name !== profile?.name && formData.nameChangeCount === 0) {
+      setNameConfirmOpen(true);
+    } else {
+      handleSave();
+    }
+  };
+
+  const confirmNameUpdate = () => {
+    setNameConfirmOpen(false);
+    handleSave();
   };
 
   const openCategoryModal = (catSlug: string) => {
@@ -398,6 +437,52 @@ export default function PerfilPage() {
     }, 300);
   };
 
+  const handleGenerateChart = async () => {
+    if (!formData.birthDate) {
+      setSaveMsg("Por favor, preencha a data de nascimento primeiro.");
+      return;
+    }
+    
+    setSaving(true);
+    try {
+      // Import dynamic is better for client side if needed, but we can just use the logic
+      // Since I can't easily import a new local file in a client component if it's not exported correctly
+      // or if there are path issues, I'll use a fetch to a new API endpoint I'll create or just calculate here.
+      // Creating an API endpoint is cleaner as it can be reused by the public profile view.
+      
+      const res = await fetch("/api/profile/astrology", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          birthDate: formData.birthDate,
+          birthTime: formData.birthTime,
+          birthPlace: formData.birthPlace
+        })
+      });
+
+      if (res.ok) {
+        const { chart } = await res.json();
+        const updatedData = { 
+          ...formData, 
+          birthChartData: chart,
+          signo: formData.signo || chart.sun
+        };
+        setFormData(updatedData);
+        setSaveMsg("Mapa Astral gerado e salvo!");
+        
+        // Auto-save astrology data
+        await handleSave(updatedData);
+      } else {
+        setSaveMsg("Erro ao gerar Mapa Astral.");
+      }
+    } catch (err) {
+      console.error(err);
+      setSaveMsg("Erro ao conectar com o serviço de astrologia.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) return <div className="p-10 text-center"><Loading /></div>;
 
   return (
@@ -438,7 +523,7 @@ export default function PerfilPage() {
                 <User size={54} className="text-gray-300" />
               )}
             </div>
-            <input type="file" className="hidden" onChange={(e) => onUpload(e, 0)} accept="image/*" disabled={photoLoading[0]} />
+            <input type="file" className="hidden" onChange={(e) => onUpload(e, 0)} accept="image/*" capture="user" disabled={photoLoading[0]} />
             <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
               <div className="flex gap-2">
                 <Camera className="text-white" />
@@ -485,7 +570,7 @@ export default function PerfilPage() {
                   <Plus className="text-gray-300 group-hover:text-indigo-400" />
                 )}
 
-                <input type="file" className="hidden" onChange={(e) => onUpload(e, i)} accept="image/*" disabled={photoLoading[i]} />
+                <input type="file" className="hidden" onChange={(e) => onUpload(e, i)} accept="image/*" capture="user" disabled={photoLoading[i]} />
               </label>
 
             ))}
@@ -514,16 +599,16 @@ export default function PerfilPage() {
               <Info size={16} className="text-gray-400" /> {t('categories')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <CardContent className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {PROFILE_CATEGORIES.filter(c => c.slug !== 'basico' && c.slug !== 'intencao' && c.slug !== 'profissao').map(cat => {
               const selectedNames = getSelectedOptionNames(cat.slug);
               return (
                 <div
                   key={cat.slug}
                   onClick={() => openCategoryModal(cat.slug)}
-                  className="p-2 border rounded-lg bg-white text-center cursor-pointer hover:border-indigo-400 hover:shadow-sm transition-all"
+                  className="p-2 sm:p-3 border rounded-xl bg-white text-center cursor-pointer hover:border-indigo-400 hover:shadow-md transition-all flex flex-col items-center justify-center min-h-[100px] sm:min-h-[80px]"
                 >
-                  <p className="text-[10px] font-bold truncate mb-1">
+                  <p className="text-[10px] sm:text-[11px] font-black mb-2 text-indigo-950 leading-tight h-8 flex items-center justify-center">
                     {tCat.has(`cat_${cat.slug}` as any) ? tCat(`cat_${cat.slug}` as any) : cat.name}
                   </p>
                   <div className="flex flex-wrap gap-1 justify-center">
@@ -532,16 +617,16 @@ export default function PerfilPage() {
                         const optionSlug = OPTION_NAME_TO_SLUG[name];
                         const translatedLabel = optionSlug && tCat.has(`opt_${optionSlug}` as any) ? tCat(`opt_${optionSlug}` as any) : name;
                         return (
-                          <Badge key={name} variant="default" className="text-[8px] h-4 font-normal px-1 bg-indigo-100 text-indigo-700 hover:bg-indigo-200">
+                          <Badge key={name} variant="default" className="text-[8px] sm:text-[9px] h-3.5 sm:h-4 font-medium px-1 sm:px-1.5 bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100 whitespace-nowrap overflow-hidden text-ellipsis max-w-[70px] sm:max-w-none">
                             {translatedLabel}
                           </Badge>
                         );
                       })
                     ) : (
-                      <Badge variant="secondary" className="text-[8px] h-4">{t('empty')}</Badge>
+                      <Badge variant="secondary" className="text-[9px] h-4 opacity-60">{t('empty')}</Badge>
                     )}
                     {selectedNames.length > 2 && (
-                      <span className="text-[8px] text-gray-500 font-medium pt-0.5">+{selectedNames.length - 2}</span>
+                      <span className="text-[9px] text-gray-500 font-bold">+{selectedNames.length - 2}</span>
                     )}
                   </div>
                 </div>
@@ -562,7 +647,44 @@ export default function PerfilPage() {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-gray-500">{t('display_name')}</label>
-              <Input placeholder={t('display_name')} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+              <div className="relative group">
+                <Input 
+                  placeholder={t('display_name')} 
+                  value={formData.name} 
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
+                  disabled={!formData.allowNameChange || formData.nameChangeCount >= 1}
+                  className={cn(
+                    "font-bold",
+                    (!formData.allowNameChange || formData.nameChangeCount >= 1) && "bg-gray-50 cursor-not-allowed opacity-80"
+                  )}
+                />
+                {(!formData.allowNameChange || formData.nameChangeCount >= 1) && (
+                  <div 
+                    className="absolute inset-0 cursor-not-allowed z-10" 
+                    onClick={() => setNameBlockedOpen(true)}
+                    title="Clique para saber mais"
+                  />
+                )}
+                {(!formData.allowNameChange || formData.nameChangeCount >= 1) && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <Lock size={14} className="text-amber-500" />
+                  </div>
+                )}
+              </div>
+              
+              {!formData.allowNameChange ? (
+                <p className="text-[10px] text-amber-600 font-bold flex items-center gap-1 mt-1 animate-pulse">
+                  <AlertCircle size={10} /> Alteração desativada pelo administrador.
+                </p>
+              ) : formData.nameChangeCount >= 1 ? (
+                <p className="text-[10px] text-gray-400 font-medium flex items-center gap-1 mt-1">
+                  <Lock size={10} /> Você já alterou seu nome uma vez.
+                </p>
+              ) : (
+                <p className="text-[10px] text-indigo-600 font-bold flex items-center gap-1 mt-1">
+                  <Sparkles size={10} className="animate-pulse" /> Você só pode alterar seu nome uma única vez.
+                </p>
+              )}
             </div>
             <div className="space-y-1.5" id="section-birthDate">
               <label className="text-xs font-medium text-gray-500">{t('birth_date')}</label>
@@ -621,6 +743,28 @@ export default function PerfilPage() {
                 <option value="OPEN_RELATIONSHIP">{t('status_OPEN_RELATIONSHIP')}</option>
               </select>
             </div>
+            <div className="space-y-1.5" id="section-signo">
+              <label className="text-xs font-medium text-gray-500">{tCat('opt_signo')}</label>
+              <select
+                className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-600"
+                value={formData.signo}
+                onChange={e => setFormData({ ...formData, signo: e.target.value })}
+              >
+                <option value="">{t('select')}</option>
+                <option value="aries">{tCat('opt_aries')}</option>
+                <option value="touro">{tCat('opt_touro')}</option>
+                <option value="gemeos">{tCat('opt_gemeos')}</option>
+                <option value="cancer">{tCat('opt_cancer')}</option>
+                <option value="leao">{tCat('opt_leao')}</option>
+                <option value="virgem">{tCat('opt_virgem')}</option>
+                <option value="libra">{tCat('opt_libra')}</option>
+                <option value="escorpiao">{tCat('opt_escorpiao')}</option>
+                <option value="sagitario">{tCat('opt_sagitario')}</option>
+                <option value="capricornio">{tCat('opt_capricornio')}</option>
+                <option value="aquario">{tCat('opt_aquario')}</option>
+                <option value="peixes">{tCat('opt_peixes')}</option>
+              </select>
+            </div>
           </div>
 
           <div className="space-y-1.5" id="section-bio">
@@ -664,8 +808,8 @@ export default function PerfilPage() {
             <label className="text-xs font-medium text-gray-500">{t('languages')}</label>
             <Popover open={languagesOpen} onOpenChange={setLanguagesOpen}>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-between font-normal hover:bg-indigo-50/50">
-                  <div className="flex gap-1 flex-wrap">
+                <Button variant="outline" className="w-full justify-between font-normal hover:bg-indigo-50/50 h-auto min-h-11 py-2">
+                  <div className="flex gap-1.5 flex-wrap">
                     {formData.languages.length > 0 ? (
                       formData.languages.map(lang => (
                         <Badge key={lang} variant="secondary" className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 flex items-center gap-1">
@@ -708,6 +852,104 @@ export default function PerfilPage() {
               </PopoverContent>
             </Popover>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* SEÇÃO 4: MAPA ASTRAL */}
+      <Card className="border-none shadow-sm overflow-hidden" id="section-astrology">
+        <CardHeader className="bg-gradient-to-r from-indigo-600/5 to-purple-600/5">
+          <CardTitle className="text-base font-bold flex items-center gap-2">
+            <Sparkles size={18} className="text-purple-600" /> {t('tab_astrology')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6 pt-6">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-gray-500">{t('birth_time')}</label>
+              <Input 
+                type="time" 
+                value={formData.birthTime} 
+                onChange={e => setFormData({ ...formData, birthTime: e.target.value })} 
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-gray-500">{t('birth_place')}</label>
+              <Input 
+                placeholder={t('birth_place_placeholder')} 
+                value={formData.birthPlace} 
+                onChange={e => setFormData({ ...formData, birthPlace: e.target.value })} 
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-center py-2">
+            <Button 
+              onClick={handleGenerateChart} 
+              disabled={saving || !formData.birthDate}
+              variant="outline"
+              className="border-purple-200 hover:border-purple-400 hover:bg-purple-50 text-purple-700 font-bold gap-2"
+            >
+              <Sparkles size={16} />
+              {t('generate_chart')}
+            </Button>
+          </div>
+
+          {formData.birthChartData && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-6 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-purple-100 space-y-6"
+            >
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center space-y-1">
+                  <p className="text-[10px] uppercase tracking-wider text-purple-600 font-bold">{t('sun_sign')}</p>
+                  <p className="text-lg font-black text-indigo-950 capitalize">{tCat(`opt_${formData.birthChartData.sun}` as any)}</p>
+                </div>
+                <div className="text-center space-y-1">
+                  <p className="text-[10px] uppercase tracking-wider text-purple-600 font-bold">{t('moon_sign')}</p>
+                  <p className="text-lg font-black text-indigo-950 capitalize">{tCat(`opt_${formData.birthChartData.moon}` as any)}</p>
+                </div>
+                <div className="text-center space-y-1">
+                  <p className="text-[10px] uppercase tracking-wider text-purple-600 font-bold">{t('ascendant')}</p>
+                  <p className="text-lg font-black text-indigo-950 capitalize">{tCat(`opt_${formData.birthChartData.ascendant}` as any)}</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest text-center">{t('elements')}</p>
+                <div className="grid grid-cols-4 gap-2">
+                  <div className="space-y-1 text-center">
+                    <div className="h-1 bg-red-200 rounded-full overflow-hidden">
+                      <div className="h-full bg-red-500" style={{ width: `${formData.birthChartData.elements.fire}%` }} />
+                    </div>
+                    <span className="text-[10px] font-bold text-red-600">{t('fire')} {formData.birthChartData.elements.fire}%</span>
+                  </div>
+                  <div className="space-y-1 text-center">
+                    <div className="h-1 bg-green-200 rounded-full overflow-hidden">
+                      <div className="h-full bg-green-500" style={{ width: `${formData.birthChartData.elements.earth}%` }} />
+                    </div>
+                    <span className="text-[10px] font-bold text-green-600">{t('earth')} {formData.birthChartData.elements.earth}%</span>
+                  </div>
+                  <div className="space-y-1 text-center">
+                    <div className="h-1 bg-yellow-200 rounded-full overflow-hidden">
+                      <div className="h-full bg-yellow-500" style={{ width: `${formData.birthChartData.elements.air}%` }} />
+                    </div>
+                    <span className="text-[10px] font-bold text-yellow-600">{t('air')} {formData.birthChartData.elements.air}%</span>
+                  </div>
+                  <div className="space-y-1 text-center">
+                    <div className="h-1 bg-blue-200 rounded-full overflow-hidden">
+                      <div className="h-full bg-blue-500" style={{ width: `${formData.birthChartData.elements.water}%` }} />
+                    </div>
+                    <span className="text-[10px] font-bold text-blue-600">{t('water')} {formData.birthChartData.elements.water}%</span>
+                  </div>
+                </div>
+              </div>
+              
+              <p className="text-sm text-indigo-900/80 text-center font-medium italic">
+                "{formData.birthChartData.summary}"
+              </p>
+            </motion.div>
+          )}
         </CardContent>
       </Card>
 
@@ -758,29 +1000,12 @@ export default function PerfilPage() {
       </Card>
 
       {/* BARRA DE AÇÕES FIXA NO RODAPÉ */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-md border-t flex justify-end items-center gap-6 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        <AnimatePresence>
-          {saveMsg && (
-            <motion.span
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0 }}
-              className={cn(
-                "text-sm font-bold flex items-center gap-1",
-                saveMsg.toLowerCase().includes("erro") ? "text-red-600" : "text-green-600"
-              )}
-            >
-              {saveMsg.toLowerCase().includes("erro") ? <X size={14} /> : <Check size={14} />}
-              {saveMsg}
-            </motion.span>
-          )}
-        </AnimatePresence>
-
-        <div className="flex gap-3">
+      <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 sm:left-auto sm:right-8 sm:bottom-8 p-2 sm:p-4 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border border-neutral-200 dark:border-neutral-800 flex flex-row-reverse sm:flex-row items-center gap-4 sm:gap-6 z-50 shadow-2xl rounded-2xl sm:rounded-xl">
+        <div className="flex gap-3 w-full sm:w-auto">
           <Button
-            onClick={handleSave}
+            onClick={onSaveClick}
             disabled={saving}
-            className="bg-indigo-600 hover:bg-indigo-700 px-10 font-bold transition-all active:scale-95"
+            className="bg-indigo-600 hover:bg-indigo-700 w-full sm:px-10 font-bold transition-all active:scale-95 shadow-lg shadow-indigo-600/20"
           >
             {saving ? <Loading size="sm" /> : (
               <span className="flex items-center gap-2">
@@ -789,6 +1014,23 @@ export default function PerfilPage() {
             )}
           </Button>
         </div>
+
+        <AnimatePresence>
+          {saveMsg && (
+            <motion.span
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className={cn(
+                "text-xs sm:text-sm font-bold flex items-center gap-2 absolute -top-14 left-1/2 -translate-x-1/2 bg-white dark:bg-neutral-800 px-4 py-2 rounded-2xl shadow-xl border z-[60] w-[90vw] max-w-xs justify-center text-center",
+                saveMsg.toLowerCase().includes("erro") ? "text-red-600 border-red-100" : "text-green-600 border-green-100"
+              )}
+            >
+              {saveMsg.toLowerCase().includes("erro") ? <X size={14} className="shrink-0" /> : <Check size={14} className="shrink-0" />}
+              <span>{saveMsg}</span>
+            </motion.span>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* MODAL DE CATEGORIA */}
@@ -875,6 +1117,53 @@ export default function PerfilPage() {
                 <p className="text-sm font-bold text-gray-600">{t('profile_perfect')}</p>
               </div>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* MODAL DE CONFIRMAÇÃO DE NOME */}
+      <Dialog open={nameConfirmOpen} onOpenChange={setNameConfirmOpen}>
+        <DialogContent className="max-w-md w-[95vw] rounded-3xl p-0 overflow-hidden bg-white border-none shadow-2xl">
+          <div className="p-8 text-center space-y-6">
+            <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-2">
+              <User className="text-indigo-600 w-10 h-10" />
+            </div>
+            <div className="space-y-2">
+              <DialogTitle className="text-2xl font-black text-neutral-900">Confirmar alteração?</DialogTitle>
+              <p className="text-neutral-500 font-medium">
+                Você está alterando seu nome para <span className="text-indigo-600 font-bold">"{formData.name}"</span>. 
+                Lembre-se: esta é sua <span className="text-red-600 font-bold">única oportunidade</span> de mudança permitida.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 pt-2">
+              <Button onClick={confirmNameUpdate} className="bg-indigo-600 hover:bg-indigo-700 h-12 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-600/20">
+                Confirmar agora
+              </Button>
+              <Button variant="ghost" onClick={() => setNameConfirmOpen(false)} className="h-12 rounded-2xl font-bold text-neutral-400 hover:text-neutral-600">
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL DE NOME BLOQUEADO */}
+      <Dialog open={nameBlockedOpen} onOpenChange={setNameBlockedOpen}>
+        <DialogContent className="max-w-md w-[95vw] rounded-3xl p-0 overflow-hidden bg-white border-none shadow-2xl">
+          <div className="p-8 text-center space-y-6">
+            <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-2">
+              <Lock className="text-amber-600 w-10 h-10" />
+            </div>
+            <div className="space-y-2">
+              <DialogTitle className="text-2xl font-black text-neutral-900">Nome Bloqueado</DialogTitle>
+              <p className="text-neutral-500 font-medium leading-relaxed">
+                {formData.nameChangeCount >= 1 
+                  ? "Você já utilizou sua única chance de alterar o nome de exibição. Por questões de segurança e identidade na comunidade, novas mudanças não são permitidas."
+                  : "A alteração de nomes está temporariamente desativada pelo administrador do sistema."}
+              </p>
+            </div>
+            <Button onClick={() => setNameBlockedOpen(false)} className="w-full bg-neutral-900 hover:bg-neutral-800 h-12 rounded-2xl font-bold text-lg">
+              Entendido
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

@@ -150,7 +150,7 @@ export function Header({ className, onMenuClick }: HeaderProps) {
         <div className="flex-1 hidden lg:block" />
 
         {/* Right side - notifications and profile */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-0.5 min-[375px]:gap-2 sm:gap-3">
           {/* Theme Toggle */}
           {mounted && (
             <button
@@ -177,9 +177,9 @@ export function Header({ className, onMenuClick }: HeaderProps) {
               )}
             </button>
             {notifOpen && (
-              <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 py-2 z-50">
-                <div className="px-4 py-2 border-b border-neutral-200 dark:border-neutral-700 flex justify-between items-center">
-                  <h3 className="font-semibold text-neutral-900 dark:text-white">{t('notifications')}</h3>
+              <div className="fixed sm:absolute top-[64px] sm:top-auto left-2 right-2 sm:left-auto sm:right-0 sm:mt-2 sm:w-80 bg-white dark:bg-neutral-800 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 py-2 z-[200] sm:max-h-auto max-h-[70vh] overflow-hidden flex flex-col">
+                <div className="px-4 py-2 border-b border-neutral-200 dark:border-neutral-700 flex justify-between items-center shrink-0">
+                  <h3 className="font-semibold text-neutral-900 dark:text-white text-sm">{t('notifications')}</h3>
                   {unreadCount > 0 && (
                     <button 
                       onClick={handleMarkAllRead}
@@ -189,7 +189,7 @@ export function Header({ className, onMenuClick }: HeaderProps) {
                     </button>
                   )}
                 </div>
-                <div className="max-h-80 overflow-y-auto">
+                <div className="overflow-y-auto flex-1">
                   {notifications.length === 0 ? (
                     <div className="px-4 py-8 text-center text-sm text-neutral-500">
                       {t('no_notifications')}
@@ -222,7 +222,7 @@ export function Header({ className, onMenuClick }: HeaderProps) {
                             "text-sm text-neutral-900 dark:text-white truncate",
                             !notif.read ? "font-bold" : "font-medium"
                           )}>{translateNotification(notif).title}</p>
-                          <p className="text-xs text-neutral-500 mt-1 line-clamp-2">{translateNotification(notif).message}</p>
+                          <p className="text-xs text-neutral-500 mt-0.5 line-clamp-2">{translateNotification(notif).message}</p>
                         </div>
                       </div>
                     ))

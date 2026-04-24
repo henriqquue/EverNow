@@ -5,10 +5,12 @@ import { useTranslations } from "next-intl";
 import { useRouter, usePathname, Link } from "@/navigation";
 import * as React from "react";
 import { useEffect, useState, useCallback } from "react";
+import { motion } from "framer-motion";
 import { Sidebar, type SidebarItem } from "@/components/ui/sidebar";
 import { Header } from "@/components/ui/header";
 import { Loading } from "@/components/ui/loading";
 import { PaywallProvider } from "@/contexts/paywall-context";
+import { OfferManager } from "@/components/offers/offer-manager";
 import {
   LayoutDashboard,
   User,
@@ -86,7 +88,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [status, session, router, pathname]);
 
-  if (status === "loading") {
+  const isAdminRedirectNeeded = status === "authenticated" && pathname === "/app" && (session?.user?.role === "SUPERADMIN" || session?.user?.role === "ADMIN");
+
+  if (status === "loading" || isAdminRedirectNeeded) {
     return <Loading fullScreen text={t('loading')} />;
   }
 
@@ -106,7 +110,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <PaywallProvider>
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col relative">
+        {/* Mobile Safe Area Bars */}
+        <div className="h-[env(safe-area-inset-top)] bg-gradient-brand w-full fixed top-0 left-0 z-[100] lg:hidden" />
+        <div className="h-[env(safe-area-inset-bottom)] bg-neutral-900 w-full fixed bottom-0 left-0 z-[100] lg:hidden" />
+
         <Sidebar
           mobileOpen={mobileOpen}
           setMobileOpen={setMobileOpen}
@@ -123,8 +131,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </Link>
           }
         />
-        <div className="lg:pl-64 min-h-screen flex flex-col">
+        <div className="lg:pl-64 min-h-screen flex flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
           <Header onMenuClick={() => setMobileOpen(true)} />
+          <OfferManager />
           <motion.main 
             key={pathname}
             initial={{ opacity: 0 }}

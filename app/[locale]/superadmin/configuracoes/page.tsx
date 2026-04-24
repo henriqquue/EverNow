@@ -44,6 +44,7 @@ interface SuperAdminSettings {
   maintenanceMode: boolean;
   allowNewRegistrations: boolean;
   emailVerificationRequired: boolean;
+  allowNameChange: boolean;
   defaultDiscoveryRange: number;
   systemVersion: string;
 }
@@ -61,15 +62,7 @@ export default function SuperAdminSettingsPage() {
         const res = await fetch("/api/admin/settings");
         if (res.ok) {
           const data = await res.json();
-          // Mix with mock system global settings
-          setSettings({
-            ...data,
-            maintenanceMode: false,
-            allowNewRegistrations: true,
-            emailVerificationRequired: true,
-            defaultDiscoveryRange: 50,
-            systemVersion: "2.4.12-rev002"
-          });
+          setSettings(data);
         }
       } catch (error) {
         console.error("Erro ao carregar configurações:", error);
@@ -79,6 +72,10 @@ export default function SuperAdminSettingsPage() {
     };
     fetchSettings();
   }, []);
+
+  const updateSetting = (key: keyof SuperAdminSettings, value: any) => {
+    setSettings(prev => prev ? { ...prev, [key]: value } : null);
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -129,6 +126,7 @@ export default function SuperAdminSettingsPage() {
           </Button>
         </div>
       </div>
+
 
       {success && (
         <motion.div 
@@ -217,21 +215,29 @@ export default function SuperAdminSettingsPage() {
                         label="Modo Manutenção" 
                         description="Bloqueia o acesso de usuários comuns. Apenas admins podem logar."
                         checked={settings?.maintenanceMode || false}
-                        onChange={(v) => setSettings(s => s ? {...s, maintenanceMode: v} : null)}
+                        onChange={(v) => updateSetting("maintenanceMode", v)}
                         variant="danger"
                       />
                       <ToggleRow 
                         label="Novos Registros" 
                         description="Permitir que novos usuários criem contas no sistema."
                         checked={settings?.allowNewRegistrations || false}
-                        onChange={(v) => setSettings(s => s ? {...s, allowNewRegistrations: v} : null)}
+                        onChange={(v) => updateSetting("allowNewRegistrations", v)}
                       />
                       <ToggleRow 
                         label="Exigir Verificação de E-mail" 
                         description="Usuários só podem usar o App após confirmar o e-mail."
                         checked={settings?.emailVerificationRequired || false}
-                        onChange={(v) => setSettings(s => s ? {...s, emailVerificationRequired: v} : null)}
+                        onChange={(v) => updateSetting("emailVerificationRequired", v)}
                       />
+                      <div className="pt-4 border-t">
+                        <ToggleRow 
+                          label="Permitir Alteração de Nome" 
+                          description="Permitir que usuários alterem seu nome de perfil (limite de 1 vez)."
+                          checked={settings?.allowNameChange ?? true}
+                          onChange={(v) => updateSetting("allowNameChange", v)}
+                        />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -274,6 +280,7 @@ export default function SuperAdminSettingsPage() {
                           <span className="text-sm font-black text-indigo-600 w-10 text-right">{settings?.defaultDiscoveryRange}Km</span>
                         </div>
                       </div>
+
                     </div>
                   </CardContent>
                 </Card>

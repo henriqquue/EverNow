@@ -281,11 +281,11 @@ export default function BannersPage() {
             animate={{ opacity: 1, y: 0 }}
           >
             <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-6">
+              <CardContent className="p-3 sm:p-6">
+                <div className="flex flex-col md:flex-row md:items-center gap-4">
                   {/* Preview do banner */}
                   <div
-                    className="w-64 h-16 rounded-lg flex items-center justify-between px-4 flex-shrink-0"
+                    className="w-full md:w-64 h-16 rounded-lg flex items-center justify-between px-4 flex-shrink-0"
                     style={{
                       backgroundColor: banner.backgroundColor || "#7c3aed",
                       color: banner.textColor || "#ffffff",
@@ -304,12 +304,14 @@ export default function BannersPage() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold">{banner.name}</h3>
-                      <Badge variant={banner.isActive ? "default" : "secondary"}>
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <h3 className="font-bold text-sm">{banner.name}</h3>
+                      <Badge variant={banner.isActive ? "default" : "secondary"} className="text-xs">
                         {banner.isActive ? "Ativo" : "Inativo"}
                       </Badge>
-                      <Badge variant="outline">
+                    </div>
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      <Badge variant="outline" className="text-xs">
                         {POSITIONS.find((p) => p.value === banner.position)?.label}
                       </Badge>
                     </div>
@@ -320,23 +322,23 @@ export default function BannersPage() {
                         </Badge>
                       ))}
                       {banner.pages.length === 0 && (
-                        <span className="text-xs text-muted-foreground">Todas as páginas</span>
+                        <span className="text-xs text-muted-foreground">Todas</span>
                       )}
                     </div>
                   </div>
 
                   {/* Métricas */}
-                  <div className="flex items-center gap-6 text-center">
+                  <div className="grid grid-cols-3 md:flex md:items-center md:gap-6 gap-2 text-center">
                     <div>
-                      <p className="text-xl font-bold">{banner.impressions}</p>
+                      <p className="text-lg md:text-xl font-bold">{banner.impressions}</p>
                       <p className="text-xs text-muted-foreground">Impressões</p>
                     </div>
                     <div>
-                      <p className="text-xl font-bold">{banner.clicks}</p>
+                      <p className="text-lg md:text-xl font-bold">{banner.clicks}</p>
                       <p className="text-xs text-muted-foreground">Cliques</p>
                     </div>
                     <div>
-                      <p className="text-xl font-bold text-primary">
+                      <p className="text-lg md:text-xl font-bold text-primary">
                         {banner.impressions > 0
                           ? ((banner.clicks / banner.impressions) * 100).toFixed(1)
                           : 0}%
@@ -346,10 +348,11 @@ export default function BannersPage() {
                   </div>
 
                   {/* Ações */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 md:gap-2 justify-end md:justify-start">
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="h-8 w-8 md:h-10 md:w-10"
                       onClick={() => handleToggleActive(banner)}
                     >
                       {banner.isActive ? (
@@ -361,6 +364,7 @@ export default function BannersPage() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="h-8 w-8 md:h-10 md:w-10"
                       onClick={() => openEditor(banner)}
                     >
                       <Edit className="h-4 w-4" />
@@ -368,6 +372,7 @@ export default function BannersPage() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="h-8 w-8 md:h-10 md:w-10"
                       onClick={() => handleDelete(banner)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -411,11 +416,11 @@ export default function BannersPage() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-card border rounded-xl w-full max-w-2xl my-8"
+              className="bg-card border rounded-xl w-full max-w-2xl mx-4 md:mx-0 my-8"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between p-6 border-b">
-                <h2 className="text-xl font-bold">
+              <div className="flex items-center justify-between p-4 md:p-6 border-b gap-2">
+                <h2 className="text-lg md:text-xl font-bold">
                   {editingId ? "Editar Banner" : "Novo Banner"}
                 </h2>
                 <Button variant="ghost" size="icon" onClick={() => setShowEditor(false)}>
@@ -423,7 +428,7 @@ export default function BannersPage() {
                 </Button>
               </div>
 
-              <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+              <div className="p-4 md:p-6 space-y-6 max-h-[calc(100vh-180px)] overflow-y-auto">
                 {/* Preview */}
                 <div>
                   <Label className="mb-2 block">Pré-visualização</Label>
@@ -452,7 +457,7 @@ export default function BannersPage() {
                 </div>
 
                 {/* Nome e slug */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label>Nome do banner</Label>
                     <Input
@@ -479,7 +484,7 @@ export default function BannersPage() {
                 </div>
 
                 {/* Conteúdo */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label>Título</Label>
                     <Input
@@ -503,7 +508,7 @@ export default function BannersPage() {
                 </div>
 
                 {/* CTA */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label>Texto do botão</Label>
                     <Input
@@ -525,7 +530,7 @@ export default function BannersPage() {
                 </div>
 
                 {/* Cores */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label>Cor de fundo</Label>
                     <div className="flex gap-2">
@@ -569,7 +574,7 @@ export default function BannersPage() {
                 </div>
 
                 {/* Posição e configurações */}
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   <div>
                     <Label>Posição</Label>
                     <Select
@@ -606,7 +611,7 @@ export default function BannersPage() {
                 {/* Orientação e Medidas */}
                 <div>
                   <Label className="mb-2 block">Orientação e Medidas</Label>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <Label>Orientação</Label>
                       <Select
@@ -681,7 +686,7 @@ export default function BannersPage() {
                 </div>
 
                 {/* Período */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label>Data de início</Label>
                     <Input
@@ -716,11 +721,11 @@ export default function BannersPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 p-6 border-t">
-                <Button variant="outline" onClick={() => setShowEditor(false)}>
+              <div className="flex flex-col md:flex-row justify-end gap-3 p-4 md:p-6 border-t">
+                <Button variant="outline" onClick={() => setShowEditor(false)} className="w-full md:w-auto">
                   Cancelar
                 </Button>
-                <Button onClick={handleSave} disabled={saving}>
+                <Button onClick={handleSave} disabled={saving} className="w-full md:w-auto">
                   {saving ? "Salvando..." : "Salvar Banner"}
                 </Button>
               </div>

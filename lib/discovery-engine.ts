@@ -220,22 +220,57 @@ export function computeAffinityScore(
   }
 
   // Interest pattern match (from positive/negative behavioral patterns)
-  if (affinity.positivePatterns && targetProfile.interests.length > 0) {
-    factors++;
+  if (targetProfile.interests.length > 0) {
     let interestScore = 0;
     let interestCount = 0;
+    
     for (const interest of targetProfile.interests) {
       const key = interest.toLowerCase();
-      if (affinity.positivePatterns[key]) {
+      if (affinity.positivePatterns && affinity.positivePatterns[key]) {
         interestScore += Math.min(affinity.positivePatterns[key] / 5, 1); // normalize
         interestCount++;
       }
       if (affinity.negativePatterns && affinity.negativePatterns[key]) {
-        interestScore -= Math.min(affinity.negativePatterns[key] / 5, 0.5);
+        // Heavy penalty for negative patterns
+        interestScore -= Math.min(affinity.negativePatterns[key] / 3, 1.5);
         interestCount++;
       }
     }
-    score += interestCount > 0 ? Math.max(0, Math.min(1, interestScore / interestCount + 0.5)) : 0.5;
+    
+    if (interestCount > 0) {
+      factors++;
+      score += Math.max(0, Math.min(1, interestScore / interestCount + 0.5));
+    }
+  }
+
+  // Profile Answer pattern match (The new "characteristic" recognition)
+  if (affinity.negativePatterns && (targetProfile as any).profileAnswers) {
+    const answers = (targetProfile as any).profileAnswers as any[];
+    let penaltyCount = 0;
+    let totalPenalty = 0;
+
+    for (const answer of answers) {
+      // Check for single value match
+      if (answer.value && affinity.negativePatterns[answer.value]) {
+        totalPenalty += Math.min(affinity.negativePatterns[answer.value] / 5, 1);
+        penaltyCount++;
+      }
+      // Check for multiple values (e.g. multi-select)
+      if (answer.values && Array.isArray(answer.values)) {
+        for (const val of answer.values) {
+          if (affinity.negativePatterns[val]) {
+            totalPenalty += Math.min(affinity.negativePatterns[val] / 5, 1);
+            penaltyCount++;
+          }
+        }
+      }
+    }
+
+    if (penaltyCount > 0) {
+      // Apply a global penalty to the score based on characteristic matches
+      const characteristicPenalty = Math.min(0.8, totalPenalty / penaltyCount);
+      return Math.max(0, (factors > 0 ? score / factors : 0.5) - characteristicPenalty);
+    }
   }
 
   return factors > 0 ? score / factors : 0.5;
@@ -338,7 +373,7 @@ export function generateExplanationLabels(
   if (extra.hasAffinityMatch && components.affinity >= 0.7) {
     labels.push(LABEL_DEFS.affinityMatch);
   }
-  if (extra.distanceKm !== undefined && extra.distanceKm <= 20) {
+  if (extra.distanceKm !== undefined && extra.distanceKm <= 50) {
     labels.push(LABEL_DEFS.nearby);
   }
   if (extra.isNewProfile) {
@@ -437,6 +472,12 @@ export async function recalculateUserAffinity(userId: string): Promise<void> {
           gender: true,
           city: true,
           interests: true,
+          profileAnswers: {
+            select: {
+              value: true,
+              values: true,
+            }
+          }
         },
       },
     },
@@ -500,9 +541,24 @@ export async function recalculateUserAffinity(userId: string): Promise<void> {
     }
 
     if (isNegative) {
+      // Track negative interest patterns
       for (const interest of target.interests) {
         const key = interest.toLowerCase();
         negativeInterests[key] = (negativeInterests[key] || 0) + weight;
+      }
+
+      // Track negative characteristic patterns from profile answers
+      if ((target as any).profileAnswers) {
+        for (const answer of (target as any).profileAnswers) {
+          if (answer.value) {
+            negativeInterests[answer.value] = (negativeInterests[answer.value] || 0) + weight;
+          }
+          if (answer.values && Array.isArray(answer.values)) {
+            for (const val of answer.values) {
+              negativeInterests[val] = (negativeInterests[val] || 0) + weight;
+            }
+          }
+        }
       }
     }
   }

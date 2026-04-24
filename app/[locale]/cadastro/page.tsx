@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Link, useRouter } from "@/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -79,7 +79,11 @@ export default function CadastroPage() {
       if (result?.error) {
         setErrors({ general: t('error_login_after_register') });
       } else {
-        router.replace("/app");
+        // New users always go to connections page
+        const session = await getSession();
+        const role = (session?.user as any)?.role;
+        const isAdmin = role === 'ADMIN' || role === 'SUPERADMIN';
+        router.replace(isAdmin ? '/app' : '/app/descobrir');
       }
     } catch {
       setErrors({ general: t('error_general') });

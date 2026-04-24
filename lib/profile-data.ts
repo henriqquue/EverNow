@@ -150,6 +150,20 @@ export const PROFILE_OPTIONS: Record<string, { name: string; slug: string; icon?
       { name: 'Coreano', slug: 'coreano' },
       { name: 'Outro', slug: 'outro' },
     ]},
+    { name: 'Signo', slug: 'signo', children: [
+      { name: 'Áries', slug: 'aries' },
+      { name: 'Touro', slug: 'touro' },
+      { name: 'Gêmeos', slug: 'gemeos' },
+      { name: 'Câncer', slug: 'cancer' },
+      { name: 'Leão', slug: 'leao' },
+      { name: 'Virgem', slug: 'virgem' },
+      { name: 'Libra', slug: 'libra' },
+      { name: 'Escorpião', slug: 'escorpiao' },
+      { name: 'Sagitário', slug: 'sagitario' },
+      { name: 'Capricórnio', slug: 'capricornio' },
+      { name: 'Aquário', slug: 'aquario' },
+      { name: 'Peixes', slug: 'peixes' },
+    ]},
   ],
 
   // B) Intenção
@@ -201,6 +215,13 @@ export const PROFILE_OPTIONS: Record<string, { name: string; slug: string; icon?
       { name: 'Tenho piercing', slug: 'tenho' },
       { name: 'Não tenho piercing', slug: 'nao-tenho' },
     ]},
+    { name: 'Cor dos olhos', slug: 'cor-olhos', children: [
+      { name: 'Castanhos', slug: 'castanhos' },
+      { name: 'Pretos', slug: 'pretos' },
+      { name: 'Azuis', slug: 'azuis' },
+      { name: 'Verdes', slug: 'verdes' },
+      { name: 'Mel', slug: 'mel' },
+    ]},
   ],
 
   // D) Família
@@ -245,12 +266,15 @@ export const PROFILE_OPTIONS: Record<string, { name: string; slug: string; icon?
       { name: 'Outro', slug: 'outro' },
     ]},
     { name: 'Espírita', slug: 'espirita' },
+    { name: 'Umbanda', slug: 'umbanda' },
+    { name: 'Candomblé', slug: 'candomble' },
     { name: 'Judeu', slug: 'judeu' },
     { name: 'Muçulmano', slug: 'muculmano' },
     { name: 'Budista', slug: 'budista' },
     { name: 'Hindu', slug: 'hindu' },
     { name: 'Agnóstico', slug: 'agnostico' },
     { name: 'Ateu', slug: 'ateu' },
+    { name: 'Esotérico / Wicca', slug: 'esoterico-wicca' },
     { name: 'Outro', slug: 'outro' },
   ],
 
@@ -293,6 +317,11 @@ export const PROFILE_OPTIONS: Record<string, { name: string; slug: string; icon?
       { name: 'Vegano', slug: 'vegano' },
       { name: 'Dieta fitness', slug: 'fitness' },
       { name: 'Low carb', slug: 'low-carb' },
+    ]},
+    { name: 'Cronotipo', slug: 'cronotipo', children: [
+      { name: 'Matutino (Acorda cedo)', slug: 'matutino' },
+      { name: 'Vespertino (Meio do dia)', slug: 'vespertino' },
+      { name: 'Noturno (Fica até tarde)', slug: 'noturno' },
     ]},
   ],
 
@@ -384,6 +413,22 @@ export const PROFILE_OPTIONS: Record<string, { name: string; slug: string; icon?
       { name: 'Assistir sozinho', slug: 'sozinho' },
       { name: 'Streaming', slug: 'streaming' },
     ]},
+    { name: 'Leitura', slug: 'leitura', children: [
+      { name: 'Amo ler', slug: 'amo-ler' },
+      { name: 'Leio ocasionalmente', slug: 'ocasionalmente' },
+      { name: 'Não tenho hábito', slug: 'nao-tenho' },
+      { name: 'Ficção / Fantasia', slug: 'ficcao-fantasia' },
+      { name: 'Não-ficção / Biografias', slug: 'biografias' },
+      { name: 'Autoajuda / Autoconhecimento', slug: 'autoajuda' },
+      { name: 'Quadrinhos / Manga', slug: 'quadrinhos' },
+    ]},
+    { name: 'Jogos / Games', slug: 'games', children: [
+      { name: 'PC / Console', slug: 'pc-console' },
+      { name: 'Mobile', slug: 'mobile' },
+      { name: 'Tabuleiro', slug: 'tabuleiro' },
+      { name: 'RPG', slug: 'rpg' },
+      { name: 'Não jogo', slug: 'nao-jogo' },
+    ]},
   ],
 
   // I) Pets
@@ -391,6 +436,8 @@ export const PROFILE_OPTIONS: Record<string, { name: string; slug: string; icon?
     { name: 'Tenho cachorro', slug: 'tenho-cachorro' },
     { name: 'Tenho gato', slug: 'tenho-gato' },
     { name: 'Tenho outros pets', slug: 'tenho-outros' },
+    { name: 'Tenho pássaros', slug: 'tenho-passaros' },
+    { name: 'Tenho peixes', slug: 'tenho-peixes' },
     { name: 'Amo animais', slug: 'amo-animais' },
     { name: 'Prefiro sem animais', slug: 'prefiro-sem' },
     { name: 'Indiferente', slug: 'indiferente' },
@@ -443,6 +490,10 @@ export const PROFILE_OPTIONS: Record<string, { name: string; slug: string; icon?
     { name: 'Show/Evento', slug: 'show', icon: '🎵' },
     { name: 'Museu/Exposição', slug: 'museu', icon: '🖼️' },
     { name: 'Parque', slug: 'parque', icon: '🏞️' },
+    { name: 'Piquenique', slug: 'piquenique', icon: '🧺' },
+    { name: 'Trilha / Trekking', slug: 'trilha', icon: '🥾' },
+    { name: 'Netflix & Chill', slug: 'netflix-chill', icon: '🍿' },
+    { name: 'Viagem curta (bate-volta)', slug: 'viagem-curta', icon: '🚗' },
   ],
 };
 

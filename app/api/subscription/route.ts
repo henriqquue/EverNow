@@ -54,7 +54,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { planId, interval = "MONTHLY" } = body;
+    const { planId, interval = "MONTHLY", couponCode } = body;
 
     if (!planId) {
       return NextResponse.json({ error: "planId é obrigatório" }, { status: 400 });
@@ -83,7 +83,44 @@ export async function POST(req: Request) {
     }
 
     const planInterval = plan.planIntervals[0];
-    const amount = planInterval?.discountPrice || planInterval?.price || plan.discountPrice || plan.price;
+    let amount = planInterval?.discountPrice || planInterval?.price || plan.discountPrice || plan.price;
+
+    // Apply coupon if provided
+    let couponId = null;
+    let discountAmount = 0;
+    if (couponCode) {
+      const coupon = await prisma.coupon.findUnique({
+        where: { code: couponCode.toUpperCase() }
+      });
+
+      if (!coupon || coupon.status !== "ACTIVE") {
+        return NextResponse.json({ error: "Cupom inválido ou expirado" }, { status: 400 });
+      }
+
+      if (coupon.expiresAt && coupon.expiresAt < new Date()) {
+        return NextResponse.json({ error: "Cupom expirado" }, { status: 400 });
+      }
+
+      if (coupon.maxUses && coupon.currentUses >= coupon.maxUses) {
+        return NextResponse.json({ error: "Cupom esgotado" }, { status: 400 });
+      }
+
+      // Calculate discount
+      if (coupon.type === "PERCENTAGE" && coupon.discountPercent) {
+        discountAmount = (amount * coupon.discountPercent) / 100;
+      } else if (coupon.type === "FIXED_AMOUNT" && coupon.discountAmount) {
+        discountAmount = Math.min(coupon.discountAmount, amount);
+      }
+
+      amount = Math.max(0, amount - discountAmount);
+      couponId = coupon.id;
+
+      // Update coupon uses
+      await prisma.coupon.update({
+        where: { id: coupon.id },
+        data: { currentUses: { increment: 1 } }
+      });
+    }
 
     // Calculate expiration date
     const now = new Date();
@@ -158,6 +195,22 @@ export async function POST(req: Request) {
         billingInterval: interval as "MONTHLY" | "YEARLY"
       }
     });
+
+    // Record coupon redemption
+    if (couponId) {
+      await prisma.couponRedemption.create({
+        data: {
+          couponId,
+          userId: user.id,
+          planSlug: plan.slug,
+          billingInterval: interval,
+          originalAmount: planInterval?.discountPrice || planInterval?.price || plan.discountPrice || plan.price,
+          discountAmount,
+          finalAmount: amount,
+          isCompleted: true
+        }
+      });
+    }
 
     // Track event
     await trackEvent({

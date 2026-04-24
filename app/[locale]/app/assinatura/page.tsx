@@ -251,24 +251,23 @@ export default function AssinaturaPage() {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between pt-2">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            <CreditCard className="w-7 h-7 text-purple-600" />
-            {t('title')}
-          </h1>
-          <p className="text-xs font-medium text-muted-foreground/80 uppercase tracking-widest mt-1">
-            {t('subtitle')}
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <CreditCard className="w-6 h-6 sm:w-7 sm:h-7 text-purple-600" />
+              {t('title')}
+            </h1>
+            <p className="text-[10px] sm:text-xs font-medium text-muted-foreground/80 uppercase tracking-widest mt-1">
+              {t('subtitle')}
+            </p>
+          </div>
+          <Link href="/app/planos" className="w-full sm:w-auto">
+            <Button variant="outline" className="gap-2 w-full sm:w-auto">
+              <Crown className="h-4 w-4" />
+              {t('view_plans')}
+            </Button>
+          </Link>
         </div>
-        <Link href="/app/planos">
-          <Button variant="outline" className="gap-2">
-            <Crown className="h-4 w-4" />
-            {t('view_plans')}
-          </Button>
-        </Link>
-      </div>
 
       {/* Status Card */}
       <motion.div
@@ -314,12 +313,12 @@ export default function AssinaturaPage() {
               </div>
 
               {/* Price & Actions */}
-              <div className="flex flex-col items-end gap-3">
-                <div className="text-right">
-                  <p className="text-3xl font-bold">
+              <div className="flex flex-col items-start md:items-end gap-3 border-t md:border-none pt-4 md:pt-0">
+                <div className="md:text-right">
+                  <p className="text-2xl sm:text-3xl font-black">
                     {formatCurrency(summary?.subscription?.amount || summary?.plan?.price || 0)}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     {t(summary?.subscription?.billingInterval === 'YEARLY' || summary?.plan?.intervals?.some(i => i.interval === 'YEARLY') ? 'price_per_year' : 'price_per_month')}
                   </p>
                 </div>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/db";
 
 /**
@@ -59,7 +59,29 @@ export async function GET(request: NextRequest) {
       dashboardRefreshRate: 30,
     };
 
-    return NextResponse.json(settings);
+    // Buscar configurações globais do sistema
+    const globalSettings = await prisma.setting.findMany({
+      where: {
+        key: {
+          in: ["allow_name_change", "maintenance_mode", "allow_new_registrations", "email_verification_required", "default_discovery_range"]
+        }
+      }
+    });
+
+    const globalObj = globalSettings.reduce((acc: any, curr) => {
+      acc[curr.key] = curr.value === "true" ? true : curr.value === "false" ? false : curr.value;
+      return acc;
+    }, {});
+
+    return NextResponse.json({
+      ...settings,
+      allowNameChange: globalObj.allow_name_change ?? true,
+      maintenanceMode: globalObj.maintenance_mode ?? false,
+      allowNewRegistrations: globalObj.allow_new_registrations ?? true,
+      emailVerificationRequired: globalObj.email_verification_required ?? true,
+      defaultDiscoveryRange: parseInt(globalObj.default_discovery_range ?? "50"),
+      systemVersion: "2.4.12-rev002"
+    });
   } catch (error) {
     console.error("Erro ao buscar configurações:", error);
     return NextResponse.json(
@@ -113,17 +135,38 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    // TODO: Salvar em database se tiver tabela de AdminSettings
-    // Por enquanto, apenas validamos e retornamos sucesso
+    // Salvar configurações globais na tabela Setting
+    const globalKeysMap: Record<string, string> = {
+      allowNameChange: "allow_name_change",
+      maintenanceMode: "maintenance_mode",
+      allowNewRegistrations: "allow_new_registrations",
+      emailVerificationRequired: "email_verification_required",
+      defaultDiscoveryRange: "default_discovery_range"
+    };
+
+    for (const [settingsKey, dbKey] of Object.entries(globalKeysMap)) {
+      if (data[settingsKey] !== undefined) {
+        await prisma.setting.upsert({
+          where: { key: dbKey },
+          update: { value: String(data[settingsKey]) },
+          create: { 
+            key: dbKey, 
+            value: String(data[settingsKey]),
+            group: "system",
+            type: typeof data[settingsKey] === "boolean" ? "boolean" : "number"
+          }
+        });
+      }
+    }
 
     // Registrar auditoria
     await prisma.lGPDAuditLog.create({
       data: {
         userId: session.user.id,
-        actionType: "USER_UPDATED",
-        entityType: "AdminSettings",
-        entityId: session.user.id,
-        description: `Admin ${session.user.email} atualizou suas configurações`,
+        actionType: "SYSTEM_UPDATED",
+        entityType: "SystemSettings",
+        entityId: "global",
+        description: `Admin ${session.user.email} atualizou as configurações globais do sistema`,
         performedBy: session.user.id,
       },
     });
@@ -141,6 +184,11 @@ export async function PUT(request: NextRequest) {
         enableMFAReminder: data.enableMFAReminder ?? true,
         showSensitiveData: data.showSensitiveData ?? false,
         dashboardRefreshRate: data.dashboardRefreshRate ?? 30,
+        allowNameChange: data.allowNameChange ?? true,
+        maintenanceMode: data.maintenanceMode ?? false,
+        allowNewRegistrations: data.allowNewRegistrations ?? true,
+        emailVerificationRequired: data.emailVerificationRequired ?? true,
+        defaultDiscoveryRange: data.defaultDiscoveryRange ?? 50,
       },
     });
   } catch (error) {

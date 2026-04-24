@@ -75,13 +75,13 @@ export function StatsCard({
       transition={{ duration: 0.5, delay }}
     >
       <Card className="overflow-hidden">
-        <CardContent className="p-6">
+        <CardContent className="p-3 sm:p-6">
           <div className="flex items-start justify-between">
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+            <div className="space-y-1 sm:space-y-2">
+              <p className="text-[8px] xs:text-[10px] sm:text-sm font-medium text-neutral-500 dark:text-neutral-400 line-clamp-1 uppercase tracking-wider">
                 {title}
               </p>
-              <p className="text-3xl font-bold text-neutral-900 dark:text-white">
+              <p className="text-xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
                 {isNumeric ? (
                   <AnimatedNumber value={value as number} prefix={prefix} suffix={suffix} />
                 ) : (
@@ -91,17 +91,17 @@ export function StatsCard({
               {trend && (
                 <div
                   className={cn(
-                    "flex items-center gap-1 text-sm font-medium",
+                    "flex items-center gap-1 text-[10px] sm:text-sm font-medium",
                     trend.positive ? "text-success" : "text-error"
                   )}
                 >
                   <span>{trend.positive ? "+" : ""}{trend.value}%</span>
-                  <span className="text-neutral-500">vs mês anterior</span>
+                  <span className="hidden sm:inline text-neutral-500">vs mês anterior</span>
                 </div>
               )}
             </div>
-            <div className={cn("p-3 rounded-xl", colorClasses[color])}>
-              <Icon className="h-6 w-6" />
+            <div className={cn("p-2 sm:p-3 rounded-lg sm:rounded-xl", colorClasses[color])}>
+              <Icon className="h-4 w-4 sm:h-6 sm:w-6" />
             </div>
           </div>
         </CardContent>

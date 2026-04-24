@@ -13,7 +13,9 @@ import {
   Activity,
   ArrowUpRight,
   Loader2,
+  Shield,
 } from "lucide-react";
+import { Link } from "@/navigation";
 import { motion } from "framer-motion";
 import { formatCurrency } from "@/lib/utils";
 
@@ -104,6 +106,50 @@ export default function SuperAdminDashboard() {
         </div>
       ) : (
         <>
+          {/* Painel de Emergência Mobile */}
+          <div className="lg:hidden space-y-4 mb-6">
+            <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-5 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-3 opacity-10">
+                <Crown className="w-20 h-20 text-amber-500" />
+              </div>
+              
+              <h2 className="text-sm font-black text-white flex items-center gap-2 mb-4 uppercase tracking-tighter">
+                <Activity className="w-4 h-4 text-emerald-500" />
+                Status de Emergência
+              </h2>
+
+              <div className="grid grid-cols-2 gap-4 mb-5">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-neutral-500 uppercase">Receita (Mês)</p>
+                  <p className="text-xl font-black text-emerald-500 tracking-tighter">
+                    {formatCurrency(stats?.monthlyRevenue ?? 0)}
+                  </p>
+                </div>
+                <div className="space-y-1 text-right">
+                  <p className="text-[10px] font-bold text-neutral-500 uppercase">Conversão</p>
+                  <p className="text-xl font-black text-amber-500 tracking-tighter">
+                    {stats?.conversionRate ?? 0}%
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <Link href="/superadmin/assinaturas" className="flex flex-col items-center justify-center p-3 bg-neutral-800 rounded-xl text-center active:scale-95 transition-transform border border-neutral-700">
+                  <CreditCard className="w-5 h-5 text-indigo-400 mb-1" />
+                  <span className="text-[8px] font-bold text-neutral-300 uppercase">Vendas</span>
+                </Link>
+                <Link href="/superadmin/comercial" className="flex flex-col items-center justify-center p-3 bg-neutral-800 rounded-xl text-center active:scale-95 transition-transform border border-neutral-700">
+                  <TrendingUp className="w-5 h-5 text-pink-400 mb-1" />
+                  <span className="text-[8px] font-bold text-neutral-300 uppercase">Metas</span>
+                </Link>
+                <Link href="/superadmin/lgpd" className="flex flex-col items-center justify-center p-3 bg-neutral-800 rounded-xl text-center active:scale-95 transition-transform border border-neutral-700">
+                  <Shield className="w-5 h-5 text-emerald-400 mb-1" />
+                  <span className="text-[8px] font-bold text-neutral-300 uppercase">LGPD</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+
           {/* Top Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatsCard title="Total de usuários" value={stats?.totalUsers ?? 0} icon={Users} color="primary" delay={0} />

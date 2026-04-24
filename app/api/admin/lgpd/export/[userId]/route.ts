@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-options';
-import { db } from '@/lib/db';
+import { prisma as db } from '@/lib/db';
 
 /**
  * GET /api/admin/lgpd/export/[userId]
@@ -27,24 +27,14 @@ export async function GET(
     }
 
     // Buscar todos os dados do usuário
-    const user = await db.user.findUnique({
+    const user = await (db.user.findUnique as any)({
       where: { id: params.userId },
       include: {
         accounts: true,
         sessions: true,
         subscription: true,
         profile: true,
-        likesSent: true,
-        likesReceived: true,
-        matchesAsUser1: true,
-        matchesAsUser2: true,
-        chatMessages: true,
         notifications: true,
-        reports: true,
-        blocksReceived: true,
-        blocksMade: true,
-        discoveryPreference: true,
-        userPhotos: true,
         lgpdRequests: true,
         lgpdAuditLogs: true,
         userConsent: true,
@@ -56,48 +46,51 @@ export async function GET(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Cast to any to allow access to all included relations
+    const u = user as any;
+
     // Compilar dados para exportação
     const exportData = {
       exportDate: new Date().toISOString(),
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        nickname: user.nickname,
-        bio: user.bio,
-        birthDate: user.birthDate,
-        gender: user.gender,
-        orientation: user.orientation,
-        city: user.city,
-        state: user.state,
-        country: user.country,
-        latitude: user.latitude,
-        longitude: user.longitude,
-        photos: user.photos,
-        interests: user.interests,
-        languages: user.languages,
-        work: user.work,
-        education: user.education,
-        createdAt: user.createdAt,
-        verificationStatus: user.verificationStatus,
-        trustScore: user.trustScore,
+        id: u.id,
+        email: u.email,
+        name: u.name,
+        nickname: u.nickname,
+        bio: u.bio,
+        birthDate: u.birthDate,
+        gender: u.gender,
+        orientation: u.orientation,
+        city: u.city,
+        state: u.state,
+        country: u.country,
+        latitude: u.latitude,
+        longitude: u.longitude,
+        photos: u.photos,
+        interests: u.interests,
+        languages: u.languages,
+        work: u.work,
+        education: u.education,
+        createdAt: u.createdAt,
+        verificationStatus: u.verificationStatus,
+        trustScore: u.trustScore,
       },
-      accounts: user.accounts.map(a => ({
+      accounts: (u.accounts || []).map((a: any) => ({
         provider: a.provider,
         createdAt: a.createdAt,
       })),
-      subscription: user.subscription,
+      subscription: u.subscription,
       interactions: {
-        likesSent: user.likesSent.length,
-        likesReceived: user.likesReceived.length,
-        matches: (user.matchesAsUser1.length + user.matchesAsUser2.length),
-        messagesReceived: user.chatMessages.length,
+        likesSent: (u.likesSent || []).length,
+        likesReceived: (u.likesReceived || []).length,
+        matches: ((u.matchesAsUser1 || []).length + (u.matchesAsUser2 || []).length),
+        messagesReceived: (u.chatMessages || []).length,
       },
-      preferences: user.discoveryPreference,
-      photos: user.userPhotos,
-      consent: user.userConsent,
-      compliance: user.lgpdCompliance,
-      auditLog: user.lgpdAuditLogs.slice(0, 100), // Últimas 100 ações
+      preferences: u.discoveryPreference,
+      photos: u.userPhotos,
+      consent: u.userConsent,
+      compliance: u.lgpdCompliance,
+      auditLog: (u.lgpdAuditLogs || []).slice(0, 100),
     };
 
     // Log de auditoria

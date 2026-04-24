@@ -2,15 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Hiding Next.js Dev Overlay for presentation */
-nextjs-portal {
-  display: none !important;
-}
-
-[data-nextjs-scroll-focus-boundary] {
-  display: none !important;
-}
-
 @layer base {
   :root {
     --background: 0 0% 100%;

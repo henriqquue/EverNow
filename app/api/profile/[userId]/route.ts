@@ -40,6 +40,11 @@ export async function GET(
           onboardingComplete: true,
           birthDate: true,
           relationshipStatus: true,
+          signo: true,
+          birthTime: true,
+          birthPlace: true,
+          birthChartData: true,
+          nameChangeCount: true,
         },
       });
       if (user) {
@@ -52,13 +57,25 @@ export async function GET(
           onboardingComplete: user.onboardingComplete,
           birthDate: user.birthDate,
           relationshipStatus: user.relationshipStatus,
+          signo: user.signo,
+          birthTime: user.birthTime,
+          birthPlace: user.birthPlace,
+          birthChartData: user.birthChartData,
+          nameChangeCount: user.nameChangeCount,
         };
       }
     }
 
+    // Buscar configuração global de alteração de nome
+    const allowNameChangeSetting = await prisma.setting.findUnique({
+      where: { key: "allow_name_change" }
+    });
+    const allowNameChange = allowNameChangeSetting ? allowNameChangeSetting.value === "true" : true;
+
     const profile = {
       ...resolved,
       ...extra,
+      allowNameChange,
     };
 
     return NextResponse.json({ profile });
@@ -92,10 +109,46 @@ export async function PUT(
       'name', 'nickname', 'bio', 'birthDate', 'gender', 'orientation',
       'lookingFor', 'relationshipStatus', 'city', 'state', 'neighborhood', 'country',
       'pronouns', 'headline', 'statusMood', 'languages', 'work', 'education',
-      'interests',
+      'interests', 'signo', 'birthTime', 'birthPlace', 'birthChartData',
     ];
 
     const data: Record<string, unknown> = {};
+
+    // Buscar usuário atual para comparar o nome
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, nameChangeCount: true }
+    });
+
+    if (!currentUser) {
+      return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
+    }
+
+    // Verificar se o nome está sendo alterado
+    if (body.name !== undefined && body.name !== currentUser.name) {
+      // Buscar configuração global
+      const allowNameChangeSetting = await prisma.setting.findUnique({
+        where: { key: "allow_name_change" }
+      });
+      const allowNameChange = allowNameChangeSetting ? allowNameChangeSetting.value === "true" : true;
+
+      if (!allowNameChange) {
+        return NextResponse.json(
+          { error: "A alteração de nome está desativada pelo administrador." },
+          { status: 403 }
+        );
+      }
+
+      if (currentUser.nameChangeCount >= 1) {
+        return NextResponse.json(
+          { error: "Você já atingiu o limite de 1 alteração de nome." },
+          { status: 403 }
+        );
+      }
+
+      // Incrementar contador de alterações
+      data.nameChangeCount = (currentUser.nameChangeCount || 0) + 1;
+    }
     for (const field of allowedFields) {
       if (body[field] !== undefined) {
         if (field === 'birthDate') {

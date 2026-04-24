@@ -54,6 +54,11 @@ model User {
   languages               String[]              @default([])
   work                    String?
   education               String?
+  signo                   String?
+  birthTime               String?
+  birthPlace              String?
+  birthChartData          Json?
+  nameChangeCount         Int                   @default(0)
   profileQuality          Float                 @default(0)
   showOnlineStatus        Boolean               @default(true)
   showLastActive          Boolean               @default(true)
@@ -100,6 +105,7 @@ model User {
   savedFilters            SavedFilter[]
   scheduledPassports      ScheduledPassport[]
   sessions                Session[]
+  paymentSessions         PaymentSession[]
   subscription            Subscription?
   plan                    Plan?                 @relation(fields: [planId], references: [id])
   tenant                  Tenant?               @relation(fields: [tenantId], references: [id])
@@ -1804,4 +1810,23 @@ enum DocumentType {
   CNH
   RG
   BIRTH_CERTIFICATE
+}
+model PaymentSession {
+  id          String   @id @default(cuid())
+  userId      String
+  itemId      String   // planId or consumableId
+  type        String   // "SUBSCRIPTION" or "CONSUMABLE"
+  interval    String?  // "MONTHLY", "YEARLY", etc.
+  status      String   @default("PENDING") // "PENDING", "COMPLETED", "CANCELED"
+  successUrl  String
+  cancelUrl   String
+  metadata    Json?    @default("{}")
+  paidAt      DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
 }

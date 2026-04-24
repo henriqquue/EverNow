@@ -35,7 +35,7 @@ export function Sidebar({ items, logo, footer, mobileOpen, setMobileOpen }: Side
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setMobileOpen(false)}
-            className="lg:hidden fixed inset-0 bg-black/50 z-40"
+            className="lg:hidden fixed inset-0 bg-black/50 z-50"
           />
         )}
       </AnimatePresence>
@@ -43,7 +43,8 @@ export function Sidebar({ items, logo, footer, mobileOpen, setMobileOpen }: Side
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-40 h-screen bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 transition-all duration-300 flex flex-col",
+          "fixed left-0 top-0 z-50 h-screen bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 transition-all duration-300 flex flex-col",
+          "pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]",
           collapsed ? "w-20" : "w-64",
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}

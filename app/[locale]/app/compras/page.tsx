@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
+import { useRouter } from "@/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ export default function ComprasPage() {
   const { data: session } = useSession();
   const t = useTranslations('Purchases');
   const common = useTranslations('Common');
+  const router = useRouter();
 
   const [activeTab, setActiveTab] = useState("store");
   const [purchases, setPurchases] = useState<any[]>([]);
@@ -80,28 +82,25 @@ export default function ComprasPage() {
     setPurchasingId(itemId);
     setMessage(null);
     try {
-      const res = await fetch("/api/consumables/purchase", {
+      // Create checkout session
+      const res = await fetch("/api/payment/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itemId })
+        body: JSON.stringify({ 
+          itemId,
+          type: "CONSUMABLE"
+        })
       });
 
       if (res.ok) {
-        // Efeito de Confetes!
-        confetti({
-          particleCount: 150,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#6366f1', '#a855f7', '#ec4899']
-        });
-
-        setMessage({ text: t('purchase_success'), type: 'success' });
-        
-        // Recarregar tudo
-        await fetchData();
+        const data = await res.json();
+        // Redirect to the mock checkout page
+        if (data.url) {
+          router.push(data.url);
+        }
       } else {
-        const error = await res.json();
-        setMessage({ text: error.error || t('purchase_error'), type: 'error' });
+        const errorData = await res.json();
+        setMessage({ text: errorData.error || t('purchase_error'), type: 'error' });
       }
     } catch (error) {
       setMessage({ text: t('purchase_error'), type: 'error' });
@@ -117,11 +116,11 @@ export default function ComprasPage() {
     <div className="max-w-5xl mx-auto p-4 space-y-8 pb-24">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            <ShoppingBag className="w-8 h-8 text-purple-600" />
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <ShoppingBag className="w-7 h-7 sm:w-8 sm:h-8 text-purple-600" />
             {t('title')}
           </h1>
-          <p className="text-sm font-medium text-muted-foreground/80 uppercase tracking-widest mt-1">
+          <p className="text-[10px] sm:text-sm font-medium text-muted-foreground/80 uppercase tracking-widest mt-1">
             {t('subtitle')}
           </p>
         </div>
@@ -145,12 +144,12 @@ export default function ComprasPage() {
       </div>
 
       <RadixTabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-muted/50 p-1 mb-8 w-fit">
-          <TabsTrigger value="store" className="gap-2 px-6">
+        <TabsList className="bg-muted/50 p-1 mb-8 w-full sm:w-fit flex">
+          <TabsTrigger value="store" className="gap-2 flex-1 sm:flex-none px-4 sm:px-6">
             <Sparkles size={16} />
             {t('tab_store')}
           </TabsTrigger>
-          <TabsTrigger value="history" className="gap-2 px-6">
+          <TabsTrigger value="history" className="gap-2 flex-1 sm:flex-none px-4 sm:px-6">
             <History size={16} />
             {t('tab_history')}
           </TabsTrigger>
@@ -189,14 +188,14 @@ export default function ComprasPage() {
                       return <ShoppingBag size={24} />;
                     })()}
                   </div>
-                  <CardTitle className="text-xl font-black leading-tight h-[48px] line-clamp-2">{item.name}</CardTitle>
-                  <CardDescription className="text-sm h-[40px] line-clamp-2">{item.description}</CardDescription>
+                  <CardTitle className="text-lg sm:text-xl font-black leading-tight h-[48px] line-clamp-2">{item.name}</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm h-[40px] line-clamp-2">{item.description}</CardDescription>
                 </CardHeader>
 
                 <CardContent className="flex flex-col flex-1 space-y-4">
                   {item.durationDays && (
-                    <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-full w-fit">
-                      <Clock size={14} />
+                    <div className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-full w-fit">
+                      <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       {item.durationDays} dias de duração
                     </div>
                   )}
@@ -268,7 +267,8 @@ export default function ComprasPage() {
           {purchases.length > 0 ? (
             <Card className="border-none shadow-sm overflow-hidden bg-white dark:bg-neutral-900">
               <CardContent className="p-0">
-                <div className="overflow-x-auto">
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b bg-muted/10 text-muted-foreground font-bold">
@@ -317,6 +317,43 @@ export default function ComprasPage() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+
+                {/* Mobile Card List */}
+                <div className="md:hidden divide-y divide-neutral-100 dark:divide-neutral-800">
+                  {purchases.map((purchase) => (
+                    <div key={purchase.id} className="p-4 space-y-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                            <Zap size={18} fill="currentColor" />
+                          </div>
+                          <div>
+                            <div className="font-bold text-sm text-neutral-900 dark:text-white">
+                              {purchase.item?.name}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground">
+                              {new Date(purchase.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-black text-indigo-600 text-sm">
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: purchase.currency || 'BRL' }).format(purchase.amount)}
+                          </div>
+                          <Badge 
+                            variant={purchase.status === "COMPLETED" ? "default" : "outline"}
+                            className={cn(
+                              "text-[9px] px-2 py-0.5 mt-1 font-black uppercase tracking-tighter",
+                              purchase.status === "COMPLETED" ? "bg-green-100 text-green-700 border-green-200" : ""
+                            )}
+                          >
+                            {t(`status_${purchase.status}` as any)}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>

@@ -69,6 +69,9 @@ export interface PublicProfileData {
   languages: string[];
   work: string | null;
   education: string | null;
+  birthTime: string | null;
+  birthPlace: string | null;
+  birthChartData: any;
   profileQuality: number;
   profileByCategory: Record<string, { name: string; values: string[] }>;
   plan: { name: string; slug: string } | null;
@@ -269,6 +272,9 @@ export async function resolvePublicProfile(
       languages: true,
       work: true,
       education: true,
+      birthTime: true,
+      birthPlace: true,
+      birthChartData: true,
       profileQuality: true,
       profileComplete: true,
       showAge: true,
@@ -372,6 +378,9 @@ export async function resolvePublicProfile(
       languages: user.languages,
       work: user.work,
       education: user.education,
+      birthTime: user.birthTime,
+      birthPlace: user.birthPlace,
+      birthChartData: user.birthChartData,
       profileQuality: user.profileQuality,
       profileByCategory,
       plan: user.plan,
@@ -454,6 +463,9 @@ export async function resolvePublicProfile(
     languages: isFieldPublic('languages') ? user.languages : [],
     work: isFieldPublic('work') ? user.work : null,
     education: isFieldPublic('education') ? user.education : null,
+    birthTime: isFieldPublic('birthTime') ? user.birthTime : null,
+    birthPlace: isFieldPublic('birthPlace') ? user.birthPlace : null,
+    birthChartData: isFieldPublic('birthChartData') ? user.birthChartData : null,
     profileQuality: user.profileQuality,
     profileByCategory,
     plan: null, // Don't expose plan to other users
@@ -531,6 +543,9 @@ export async function calculateProfileQuality(userId: string): Promise<number> {
       languages: true,
       photos: true,
       userPhotos: true,
+      birthTime: true,
+      birthPlace: true,
+      birthChartData: true,
       profileAnswers: { select: { option: { select: { category: { select: { slug: true } } } } } },
     },
   });
@@ -557,6 +572,9 @@ export async function calculateProfileQuality(userId: string): Promise<number> {
     'interests': user.interests.length > 0,
     'languages': user.languages.length > 0,
     'photos': user.userPhotos.length > 0 || user.photos.length > 0,
+    'birthTime': !!user.birthTime,
+    'birthPlace': !!user.birthPlace,
+    'birthChartData': !!user.birthChartData,
   };
   
   const answeredCategories = new Set(

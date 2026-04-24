@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Link, useRouter } from "@/navigation";
 import { useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -52,7 +52,19 @@ export default function LoginPage() {
       if (result?.error) {
         setErrors({ general: result.error });
       } else {
-        router.replace(callbackUrl);
+        // Fetch session to determine role-based redirect
+        const session = await getSession();
+        const role = (session?.user as any)?.role;
+        const isAdmin = role === 'ADMIN' || role === 'SUPERADMIN';
+        // If a specific callbackUrl was given (not the default /app), respect it
+        const hasCustomCallback = callbackUrl !== '/app';
+        if (hasCustomCallback) {
+          router.replace(callbackUrl);
+        } else if (isAdmin) {
+          router.replace('/app');
+        } else {
+          router.replace('/app/descobrir');
+        }
       }
     } catch {
       setErrors({ general: t('error_general') });

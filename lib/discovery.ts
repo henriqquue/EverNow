@@ -266,12 +266,12 @@ export async function discoverProfiles(
     baseWhere.userPhotos = { some: {} };
   }
 
-  // Location filters - Enhanced for Passport support
+  // Location filters - Enhanced for Passport support and Radius filtering
   const searchNeighborhoods = filters.neighborhoods && filters.neighborhoods.length > 0
     ? filters.neighborhoods
     : (userLocation?.isPassport ? [userLocation.neighborhood] : undefined);
 
-  const searchCities = filters.cities && filters.cities.length > 0 
+  let searchCities = filters.cities && filters.cities.length > 0 
     ? filters.cities 
     : (userLocation?.isPassport ? [userLocation.city] : undefined);
     
@@ -283,15 +283,33 @@ export async function discoverProfiles(
     ? filters.countries
     : (userLocation?.isPassport ? [userLocation.country] : undefined);
 
+  // ALGORITHM: Default to user's city if no other location filter is active
+  if (!searchNeighborhoods && !searchCities && !searchStates && !searchCountries && userLocation?.city && !filters.maxDistance) {
+    searchCities = [userLocation.city];
+  }
+
+  // ALGORITHM: Database-level bounding box optimization for distance filtering
+  if (filters.maxDistance && userLocation?.latitude && userLocation?.longitude) {
+    const lat = userLocation.latitude;
+    const lon = userLocation.longitude;
+    // 1 degree latitude ~ 111km
+    // 1 degree longitude ~ 111km * cos(lat)
+    const latDelta = filters.maxDistance / 111;
+    const lonDelta = filters.maxDistance / (111 * Math.cos(lat * Math.PI / 180));
+    
+    baseWhere.latitude = { gte: lat - latDelta, lte: lat + latDelta };
+    baseWhere.longitude = { gte: lon - lonDelta, lte: lon + lonDelta };
+  }
+
   if (searchNeighborhoods && searchNeighborhoods.length > 0) {
     const locationCondition = {
       OR: [
-        { neighborhood: { in: searchNeighborhoods } },
+        { neighborhood: { in: searchNeighborhoods.filter(Boolean) as string[] } },
         {
           passportSetting: {
             isActive: true,
             isAppearing: true,
-            neighborhood: { in: searchNeighborhoods }
+            neighborhood: { in: searchNeighborhoods.filter(Boolean) as string[] }
           }
         },
         {
@@ -300,7 +318,7 @@ export async function discoverProfiles(
               isActive: true,
               startDate: { lte: new Date() },
               endDate: { gte: new Date() },
-              neighborhood: { in: searchNeighborhoods }
+              neighborhood: { in: searchNeighborhoods.filter(Boolean) as string[] }
             }
           }
         }
@@ -311,12 +329,12 @@ export async function discoverProfiles(
   } else if (searchCities && searchCities.length > 0) {
     const locationCondition = {
       OR: [
-        { city: { in: searchCities } },
+        { city: { in: searchCities.filter(Boolean) as string[] } },
         {
           passportSetting: {
             isActive: true,
             isAppearing: true,
-            city: { in: searchCities }
+            city: { in: searchCities.filter(Boolean) as string[] }
           }
         },
         {
@@ -325,7 +343,7 @@ export async function discoverProfiles(
               isActive: true,
               startDate: { lte: new Date() },
               endDate: { gte: new Date() },
-              city: { in: searchCities }
+              city: { in: searchCities.filter(Boolean) as string[] }
             }
           }
         }
@@ -336,12 +354,12 @@ export async function discoverProfiles(
   } else if (searchStates && searchStates.length > 0) {
     const locationCondition = {
       OR: [
-        { state: { in: searchStates } },
+        { state: { in: searchStates.filter(Boolean) as string[] } },
         {
           passportSetting: {
             isActive: true,
             isAppearing: true,
-            state: { in: searchStates }
+            state: { in: searchStates.filter(Boolean) as string[] }
           }
         }
       ]
@@ -351,12 +369,12 @@ export async function discoverProfiles(
   } else if (searchCountries && searchCountries.length > 0) {
     const locationCondition = {
       OR: [
-        { country: { in: searchCountries } },
+        { country: { in: searchCountries.filter(Boolean) as string[] } },
         {
           passportSetting: {
             isActive: true,
             isAppearing: true,
-            country: { in: searchCountries }
+            country: { in: searchCountries.filter(Boolean) as string[] }
           }
         }
       ]
@@ -542,7 +560,13 @@ export async function discoverProfiles(
       gender: profile.gender,
       city: profile.city,
       interests: profile.interests,
+      profileAnswers: profile.profileAnswers as any, // Pass answers for characteristic recognition
     });
+
+    // ALGORITHM: Stop recommending if affinity is extremely low (strong negative pattern match)
+    if (userAffinity && affinityScore < 0.1) {
+      continue;
+    }
     const recencyScore = computeRecencyScore(
       { lastLoginAt: profile.lastLoginAt, createdAt: profile.createdAt },
       mode
