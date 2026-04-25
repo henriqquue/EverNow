@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { User, Mail, Lock, AlertCircle, CheckCircle, Heart } from "lucide-react";
 import { isValidEmail, checkPasswordStrength } from "@/lib/utils";
 
@@ -18,6 +19,7 @@ export default function CadastroPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    termsAccepted: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -44,6 +46,9 @@ export default function CadastroPage() {
     }
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = t('error_passwords_dont_match');
+    }
+    if (!formData.termsAccepted) {
+      newErrors.terms = "Você deve aceitar os Termos de Uso e Política de Privacidade.";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -180,7 +185,34 @@ export default function CadastroPage() {
                 disabled={loading}
               />
 
-              <Button type="submit" className="w-full" loading={loading}>
+              <div className="flex items-start space-x-2 pt-2">
+                <Checkbox 
+                  id="terms" 
+                  checked={formData.termsAccepted}
+                  onCheckedChange={(checked) => setFormData({ ...formData, termsAccepted: checked as boolean })}
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <label
+                    htmlFor="terms"
+                    className="text-xs font-medium leading-tight peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-neutral-600 dark:text-neutral-400"
+                  >
+                    Eu li e concordo com os{" "}
+                    <Link href="/termos" target="_blank" className="text-primary-600 hover:underline">
+                      Termos de Uso
+                    </Link>{" "}
+                    e a{" "}
+                    <Link href="/privacidade" target="_blank" className="text-primary-600 hover:underline">
+                      Política de Privacidade
+                    </Link>
+                    .
+                  </label>
+                  {errors.terms && (
+                    <p className="text-[10px] text-error font-medium">{errors.terms}</p>
+                  )}
+                </div>
+              </div>
+
+              <Button type="submit" className="w-full mt-2" loading={loading}>
                 {t('register_btn')}
               </Button>
 
