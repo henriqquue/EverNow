@@ -69,7 +69,7 @@ export default function AdminDashboard() {
               <AlertTriangle className="w-5 h-5 text-red-500 mb-1" />
               <span className="text-[10px] font-bold uppercase">Moderar Denúncias</span>
               {stats?.pendingReports && stats.pendingReports > 0 ? (
-                <Badge variant="destructive" className="mt-1 h-4 text-[8px]">{stats.pendingReports}</Badge>
+                <Badge variant="error" className="mt-1 h-4 text-[8px]">{stats.pendingReports}</Badge>
               ) : null}
             </Link>
             <Link href="/admin/usuarios" className="flex flex-col items-center justify-center p-3 bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 text-center transition-active active:scale-95">
